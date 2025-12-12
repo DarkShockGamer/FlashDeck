@@ -1,170 +1,1214 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Flashcard Decks</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cold UI Flashcards</title>
+  <meta name="color-scheme" content="dark" />
   <style>
-    :root {
-      --bg: #050309;
-      --bg-alt: #12071f;
-      --card-bg: #170826;
-      --card-border: #7c3aed;
-      --accent: #a855f7;
-      --accent-soft: rgba(124, 58, 237, 0.3);
-      --text-main: #f9f5ff;
-      --text-muted: #a3a3c2;
-      --danger: #f97373;
+    :root{
+      --bg0:#060710;
+      --bg1:#0a0c18;
+      --panel: rgba(12, 16, 32, .62);
+      --panel2: rgba(12, 16, 32, .34);
+      --stroke: rgba(120, 190, 255, .22);
+      --stroke2: rgba(255,255,255,.08);
+      --text:#e9f1ff;
+      --muted: rgba(233, 241, 255, .72);
+      --muter: rgba(233, 241, 255, .50);
+      --cyan:#33d6ff;
+      --violet:#a74bff;
+      --lime:#7CFFB2;
+      --amber:#ffd36b;
+      --danger:#ff4d7d;
+
+      --shadow: 0 22px 60px rgba(0,0,0,.55);
+      --blur: 18px;
+      --radius: 20px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 20% 20%, rgba(167,75,255,.22), transparent 60%),
+        radial-gradient(1000px 700px at 80% 25%, rgba(51,214,255,.20), transparent 60%),
+        radial-gradient(900px 700px at 55% 80%, rgba(124,255,178,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
     }
 
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    .fx, .fx::before, .fx::after{ position:fixed; inset:0; pointer-events:none; }
+    .fx::before{
+      content:"";
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255,255,255,.04) 0px,
+          rgba(255,255,255,.04) 1px,
+          transparent 2px,
+          transparent 6px
+        );
+      opacity:.06;
+      mix-blend-mode: overlay;
+      filter: blur(.2px);
+    }
+    .fx::after{
+      content:"";
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+      opacity:.09;
+      mix-blend-mode: soft-light;
+      animation: drift 10s linear infinite;
+    }
+    @keyframes drift { from{ transform:translate3d(0,0,0);} to{transform:translate3d(-40px, -30px,0);} }
+
+    .shell{
+      min-height:100%;
+      display:grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 16px;
+      padding: 18px;
+      max-width: 1180px;
+      margin: 0 auto;
     }
 
-    body {
-      margin: 0;
-      padding: 0;
-      background: radial-gradient(circle at top, #1f0738 0, #050309 50%, #020008 100%);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: var(--panel2);
+      border: 1px solid var(--stroke2);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      box-shadow: 0 12px 40px rgba(0,0,0,.28);
     }
-
-    header {
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid #1f102f;
-      background: linear-gradient(90deg, #090013, #1a0831);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      min-width: 220px;
     }
-
-    header h1 {
-      font-size: 1.3rem;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .logo{
+      width: 30px; height: 30px; border-radius: 12px;
+      background:
+        radial-gradient(12px 12px at 30% 30%, rgba(255,255,255,.18), transparent 60%),
+        linear-gradient(135deg, rgba(51,214,255,.85), rgba(167,75,255,.85));
+      box-shadow: 0 0 0 1px rgba(255,255,255,.10), 0 10px 30px rgba(51,214,255,.12);
     }
-
-    header h1 span.logo-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: radial-gradient(circle, #a855f7, #7c3aed);
-      box-shadow: 0 0 10px #a855f7;
-    }
-
-    header .subtitle {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    main {
-      display: grid;
-      grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
-      flex: 1;
-      overflow: hidden;
-    }
-
-    /* Sidebar (Deck list + card editor) */
-    .sidebar {
-      border-right: 1px solid #1f102f;
-      background: radial-gradient(circle at top left, #20093f 0, #090013 50%);
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      overflow: hidden;
-    }
-
-    .panel {
-      background: linear-gradient(145deg, rgba(24, 5, 46, 0.98), rgba(7, 1, 18, 0.98));
-      border-radius: 0.9rem;
-      padding: 0.75rem 0.8rem;
-      border: 1px solid rgba(124, 58, 237, 0.45);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-    }
-
-    .panel-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.6rem;
-    }
-
-    .panel-header h2 {
-      font-size: 0.95rem;
-      margin: 0;
+    .brand .title{
+      margin:0;
+      font-size: 13px;
+      letter-spacing: .18em;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
+      color: rgba(233,241,255,.88);
+    }
+    .brand .sub{
+      margin:2px 0 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+    .hdr-right{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .pill{
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.14);
+      border: 1px solid var(--stroke2);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .kbd{
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(233,241,255,.88);
+      border: 1px solid rgba(255,255,255,.12);
+      border-bottom-color: rgba(255,255,255,.06);
+      background: rgba(0,0,0,.28);
+      padding: 2px 7px;
+      border-radius: 8px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.25);
     }
 
-    button, input, textarea, select {
-      background: none;
-      border: none;
-      color: inherit;
+    main{
+      display:grid;
+      grid-template-columns: 420px 1fr;
+      gap: 16px;
+      align-items:start;
+    }
+    @media (max-width: 980px){
+      main{ grid-template-columns: 1fr; }
+    }
+
+    .panel{
+      border-radius: var(--radius);
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .panel::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(520px 280px at 0% 0%, rgba(51,214,255,.14), transparent 55%),
+                  radial-gradient(520px 280px at 100% 0%, rgba(167,75,255,.12), transparent 55%),
+                  radial-gradient(520px 280px at 50% 100%, rgba(124,255,178,.08), transparent 55%);
+      pointer-events:none;
+      opacity:.85;
+    }
+    .panel > *{ position:relative; }
+
+    .panel-h{
+      padding: 14px 14px 0 14px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .panel-h h2{
+      margin:0;
+      font-size: 16px;
+      letter-spacing: .02em;
+    }
+    .panel-h .hint{
+      margin:0;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+    .panel-b{
+      padding: 14px;
+    }
+
+    label{
+      display:block;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: var(--mono);
+      margin: 10px 0 6px;
+      letter-spacing:.06em;
+      text-transform: uppercase;
+    }
+    input[type="text"], textarea{
+      width:100%;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      padding: 12px 12px;
+      outline:none;
       font: inherit;
-      outline: none;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+    textarea{ min-height: 96px; resize: vertical; }
+
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 980px){
+      .row{ grid-template-columns: 1fr; }
     }
 
-    .btn {
-      border-radius: 999px;
-      padding: 0.3rem 0.8rem;
-      font-size: 0.75rem;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      border: 1px solid var(--card-border);
-      background: radial-gradient(circle at top, #7c3aed, #4c1d95);
-      color: #fdfcff;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
-      box-shadow: 0 0 8px rgba(124, 58, 237, 0.7);
+    .btnbar{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      padding-top: 12px;
+      align-items:center;
     }
-
-    .btn:hover {
+    button{
+      appearance:none;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font: inherit;
+      cursor:pointer;
+      transition: transform 120ms ease, background 140ms ease, border-color 140ms ease;
+      user-select:none;
+    }
+    button:hover{
+      background: rgba(255,255,255,.09);
+      border-color: rgba(51,214,255,.22);
       transform: translateY(-1px);
-      box-shadow: 0 0 12px rgba(168, 85, 247, 0.9);
+    }
+    button:active{ transform: translateY(0px); }
+    button.primary{
+      background: linear-gradient(135deg, rgba(51,214,255,.28), rgba(167,75,255,.22));
+      border-color: rgba(51,214,255,.28);
+      box-shadow: 0 10px 30px rgba(51,214,255,.10);
+    }
+    button.danger{
+      border-color: rgba(255,77,125,.30);
+      background: rgba(255,77,125,.10);
+    }
+    button.ghost{
+      background: rgba(0,0,0,.10);
+    }
+    button:disabled{
+      cursor:not-allowed;
+      opacity:.55;
+      transform:none !important;
     }
 
-    .btn-outline {
-      background: rgba(10, 0, 30, 0.5);
-      border-color: rgba(148, 163, 184, 0.5);
-      box-shadow: none;
-      color: var(--text-main);
+    .tiny{
+      font-size: 12px;
+      color: var(--muted);
+      margin: 8px 0 0 0;
+      line-height: 1.45;
     }
-
-    .btn-outline:hover {
-      background: rgba(15, 6, 40, 0.9);
-      box-shadow: 0 0 8px rgba(148, 163, 184, 0.6);
-    }
-
-    .btn-danger {
-      border-color: rgba(248, 113, 113, 0.7);
-      color: #fecaca;
-      background: radial-gradient(circle at top, #b91c1c, #7f1d1d);
-      box-shadow: 0 0 10px rgba(248, 113, 113, 0.7);
-    }
-
-    .btn-danger:hover {
-      box-shadow: 0 0 14px rgba(248, 113, 113, 0.9);
-    }
-
-    .btn-sm {
-      padding: 0.2rem 0.5rem;
-      font-size: 0.7rem;
-    }
-
-    .btn-icon {
-      width: 1.7rem;
-      height: 1.7rem;
+    .tiny code{
+      font-family: var(--mono);
+      color: rgba(233,241,255,.88);
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.10);
+      padding: 1px 6px;
       border-radius: 999px;
-      padding: 0;
-     *
-
+    }
+
+    /* Study area */
+    .study{
+      padding: 14px;
+      display:grid;
+      gap: 12px;
+    }
+    .study-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
+    }
+    .deckname{
+      display:flex; flex-direction:column; gap: 4px;
+    }
+    .deckname h2{
+      margin:0;
+      font-size: 16px;
+    }
+    .deckname p{
+      margin:0;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+    .progress{
+      display:flex; align-items:center; gap:10px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .bar{
+      width: 180px;
+      height: 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      overflow:hidden;
+    }
+    .bar > i{
+      display:block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(51,214,255,.7), rgba(167,75,255,.7), rgba(124,255,178,.6));
+      box-shadow: 0 0 20px rgba(51,214,255,.18);
+    }
+
+    .card3d{
+      perspective: 1400px;
+      min-height: 380px;
+    }
+    .card{
+      position:relative;
+      width:100%;
+      min-height: 380px;
+      border-radius: calc(var(--radius) + 6px);
+      border: 1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      box-shadow: 0 18px 50px rgba(0,0,0,.40);
+      transform-style: preserve-3d;
+      transition: transform 560ms cubic-bezier(.2,.9,.2,1);
+      overflow:hidden;
+    }
+    .card::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(420px 220px at 20% 10%, rgba(51,214,255,.18), transparent 55%),
+        radial-gradient(420px 220px at 80% 15%, rgba(167,75,255,.16), transparent 55%),
+        radial-gradient(360px 200px at 50% 95%, rgba(124,255,178,.10), transparent 55%);
+      opacity:.9;
+      pointer-events:none;
+    }
+    .face{
+      position:absolute;
+      inset:0;
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      backface-visibility:hidden;
+      -webkit-backface-visibility:hidden;
+    }
+    .front{ transform: rotateY(0deg); }
+    .back{ transform: rotateY(180deg); }
+
+    .card.flipped{ transform: rotateY(180deg); }
+
+    .face-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.16);
+      border: 1px solid rgba(255,255,255,.10);
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .dot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--cyan);
+      box-shadow: 0 0 0 6px rgba(51,214,255,.10);
+    }
+
+    .content{
+      flex:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding: 10px 8px;
+    }
+    .content .big{
+      font-size: clamp(22px, 2.3vw, 36px);
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .content .small{
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .face-bottom{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .study-controls{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
+      padding-top: 2px;
+    }
+
+    .table{
+      border-top: 1px solid rgba(255,255,255,.10);
+      margin-top: 10px;
+      padding-top: 10px;
+      display:grid;
+      gap: 10px;
+    }
+    .item{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items:start;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.10);
+    }
+    .item .q{
+      margin:0;
+      font-size: 13px;
+      color: rgba(233,241,255,.88);
+    }
+    .item .a{
+      margin:6px 0 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: pre-wrap;
+    }
+    .item .actions{
+      display:flex;
+      gap: 8px;
+    }
+    .iconbtn{
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-family: var(--mono);
+      font-size: 12px;
+      background: rgba(0,0,0,.14);
+    }
+
+    footer{
+      color: var(--muter);
+      font-family: var(--mono);
+      font-size: 12px;
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
+      padding: 0 4px;
+    }
+    a{ color: rgba(51,214,255,.85); text-decoration:none; }
+    a:hover{ text-decoration:underline; }
+
+    /* Toast */
+    .toast{
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity 160ms ease, transform 220ms ease;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      color: rgba(233,241,255,.86);
+      font-family: var(--mono);
+      font-size: 12px;
+      box-shadow: 0 16px 50px rgba(0,0,0,.4);
+    }
+    .toast.show{ opacity:1; transform: translateX(-50%) translateY(0px); }
+  </style>
+</head>
+
+<body>
+  <div class="fx"></div>
+
+  <div class="shell">
+    <header class="panel">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <p class="title">FLASH // COLD UI</p>
+          <p class="sub">Local, single-file — decks saved to your browser</p>
+        </div>
+      </div>
+      <div class="hdr-right">
+        <div class="pill">Flip <span class="kbd">Space</span></div>
+        <div class="pill">Prev/Next <span class="kbd">←</span> <span class="kbd">→</span></div>
+        <div class="pill">Shuffle <span class="kbd">S</span></div>
+        <div class="pill">Focus <span class="kbd">F</span></div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Builder -->
+      <section class="panel" aria-label="Deck builder">
+        <div class="panel-h">
+          <div>
+            <h2>Deck Builder</h2>
+            <p class="hint">Create decks + unlimited cards</p>
+          </div>
+          <div class="pill" id="storageState">Storage: local</div>
+        </div>
+        <div class="panel-b">
+          <label for="deckName">Deck name</label>
+          <input id="deckName" type="text" placeholder="e.g., Biology - Cell Structure" />
+
+          <div class="row">
+            <div>
+              <label for="question">Front (question/term)</label>
+              <textarea id="question" placeholder="e.g., What is the mitochondria?"></textarea>
+            </div>
+            <div>
+              <label for="answer">Back (answer/definition)</label>
+              <textarea id="answer" placeholder="e.g., The powerhouse of the cell; produces ATP."></textarea>
+            </div>
+          </div>
+
+          <div class="btnbar">
+            <button class="primary" id="addCardBtn">Add card</button>
+            <button class="ghost" id="newDeckBtn">New deck</button>
+            <button class="ghost" id="saveDeckBtn">Save</button>
+            <button class="ghost" id="exportBtn">Export JSON</button>
+            <button class="ghost" id="importBtn">Import JSON</button>
+            <input id="importFile" type="file" accept="application/json" hidden />
+            <button class="danger" id="clearAllBtn" title="Deletes all decks stored in this browser">Clear all</button>
+          </div>
+
+          <p class="tiny">
+            Tip: Click a card in the list to jump to it. Data persists via <code>localStorage</code>.
+          </p>
+
+          <div class="table" id="cardList" aria-label="Card list"></div>
+        </div>
+      </section>
+
+      <!-- Study -->
+      <section class="panel" aria-label="Study mode">
+        <div class="study">
+          <div class="study-top">
+            <div class="deckname">
+              <h2 id="studyDeckTitle">No deck loaded</h2>
+              <p id="studyMeta">Add cards to begin.</p>
+            </div>
+            <div class="progress">
+              <span id="posText">0 / 0</span>
+              <span class="bar" aria-hidden="true"><i id="barFill"></i></span>
+            </div>
+          </div>
+
+          <div class="card3d">
+            <div class="card" id="flashcard" tabindex="0" role="button" aria-label="Flashcard (click to flip)">
+              <div class="face front">
+                <div class="face-top">
+                  <div class="badge"><span class="dot"></span> FRONT</div>
+                  <div class="badge" id="frontTag">term</div>
+                </div>
+                <div class="content">
+                  <p class="big" id="frontText">Create a deck and add a card.</p>
+                </div>
+                <div class="face-bottom">
+                  <span>Click / Space to flip</span>
+                  <span id="cardIdText">—</span>
+                </div>
+              </div>
+
+              <div class="face back">
+                <div class="face-top">
+                  <div class="badge"><span class="dot" style="background:var(--violet); box-shadow:0 0 0 6px rgba(167,75,255,.10)"></span> BACK</div>
+                  <div class="badge" id="backTag">definition</div>
+                </div>
+                <div class="content">
+                  <p class="small" id="backText">Your answer will appear here.</p>
+                </div>
+                <div class="face-bottom">
+                  <span>← / → to navigate</span>
+                  <span id="timeText">ready</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="study-controls">
+            <div class="btnbar" style="padding:0">
+              <button id="prevBtn">Prev</button>
+              <button class="primary" id="flipBtn">Flip</button>
+              <button id="nextBtn">Next</button>
+              <button class="ghost" id="shuffleBtn">Shuffle</button>
+              <button class="ghost" id="resetOrderBtn" title="Restore original order">Reset order</button>
+            </div>
+            <div class="btnbar" style="padding:0">
+              <button class="ghost" id="markKnownBtn" title="Marks this card as known (visual only)">Known</button>
+              <button class="ghost" id="markReviewBtn" title="Marks this card for review (visual only)">Review</button>
+              <button class="danger" id="deleteCurrentBtn" title="Delete the current card">Delete card</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Keys: <span class="kbd">Space</span> flip · <span class="kbd">←</span>/<span class="kbd">→</span> nav · <span class="kbd">S</span> shuffle · <span class="kbd">F</span> focus</span>
+      <span>Single-file app · no network requests</span>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // -----------------------------
+    // Data model + persistence
+    // -----------------------------
+    const STORAGE_KEY = "coldui.flashcards.v1";
+    const uid = () => Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
+
+    /** @type {{ decks: Array<{id:string, name:string, createdAt:number, cards:Array<{id:string, q:string, a:string, createdAt:number, state?:'known'|'review'|''}>}> }} */
+    let db = { decks: [] };
+
+    /** Current session state */
+    const state = {
+      deckId: null,
+      order: /** @type {string[]} */ ([]),
+      index: 0,
+      flipped: false,
+      focus: false,
+      lastFlipAt: performance.now()
+    };
+
+    function loadDB(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(raw){
+          db = JSON.parse(raw);
+          if(!db || !Array.isArray(db.decks)) db = { decks: [] };
+        }
+      }catch{
+        db = { decks: [] };
+      }
+    }
+
+    function saveDB(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+    }
+
+    function getDeck(){
+      return db.decks.find(d => d.id === state.deckId) || null;
+    }
+
+    function toast(msg){
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove("show"), 1200);
+    }
+
+    // -----------------------------
+    // UI refs
+    // -----------------------------
+    const $ = (id) => document.getElementById(id);
+
+    const deckName = $("deckName");
+    const question = $("question");
+    const answer = $("answer");
+
+    const addCardBtn = $("addCardBtn");
+    const newDeckBtn = $("newDeckBtn");
+    const saveDeckBtn = $("saveDeckBtn");
+    const exportBtn = $("exportBtn");
+    const importBtn = $("importBtn");
+    const importFile = $("importFile");
+    const clearAllBtn = $("clearAllBtn");
+
+    const cardList = $("cardList");
+
+    const studyDeckTitle = $("studyDeckTitle");
+    const studyMeta = $("studyMeta");
+    const posText = $("posText");
+    const barFill = $("barFill");
+
+    const flashcard = $("flashcard");
+    const frontText = $("frontText");
+    const backText = $("backText");
+    const cardIdText = $("cardIdText");
+    const timeText = $("timeText");
+
+    const prevBtn = $("prevBtn");
+    const nextBtn = $("nextBtn");
+    const flipBtn = $("flipBtn");
+    const shuffleBtn = $("shuffleBtn");
+    const resetOrderBtn = $("resetOrderBtn");
+    const markKnownBtn = $("markKnownBtn");
+    const markReviewBtn = $("markReviewBtn");
+    const deleteCurrentBtn = $("deleteCurrentBtn");
+
+    // -----------------------------
+    // Rendering
+    // -----------------------------
+    function ensureOrder(){
+      const deck = getDeck();
+      if(!deck){
+        state.order = [];
+        state.index = 0;
+        return;
+      }
+      const ids = deck.cards.map(c => c.id);
+      // keep existing order when possible
+      const kept = state.order.filter(id => ids.includes(id));
+      const missing = ids.filter(id => !kept.includes(id));
+      state.order = kept.concat(missing);
+      if(state.index < 0) state.index = 0;
+      if(state.index > state.order.length - 1) state.index = Math.max(0, state.order.length - 1);
+    }
+
+    function getCurrentCard(){
+      const deck = getDeck();
+      if(!deck) return null;
+      ensureOrder();
+      const id = state.order[state.index];
+      return deck.cards.find(c => c.id === id) || null;
+    }
+
+    function setFlipped(v){
+      state.flipped = v;
+      flashcard.classList.toggle("flipped", v);
+      const now = performance.now();
+      const elapsed = Math.max(0, Math.round((now - state.lastFlipAt) / 1000));
+      if(v){
+        timeText.textContent = (elapsed ? `${elapsed}s on front` : "flipped");
+      }else{
+        timeText.textContent = "front";
+      }
+      state.lastFlipAt = now;
+    }
+
+    function renderStudy(){
+      const deck = getDeck();
+      const count = deck?.cards.length || 0;
+
+      if(!deck){
+        studyDeckTitle.textContent = "No deck loaded";
+        studyMeta.textContent = "Create a deck, add cards, then study.";
+        posText.textContent = "0 / 0";
+        barFill.style.width = "0%";
+        frontText.textContent = "Create a deck and add a card.";
+        backText.textContent = "Your answer will appear here.";
+        cardIdText.textContent = "—";
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        flipBtn.disabled = true;
+        shuffleBtn.disabled = true;
+        resetOrderBtn.disabled = true;
+        markKnownBtn.disabled = true;
+        markReviewBtn.disabled = true;
+        deleteCurrentBtn.disabled = true;
+        setFlipped(false);
+        return;
+      }
+
+      ensureOrder();
+
+      studyDeckTitle.textContent = deck.name || "Untitled deck";
+      studyMeta.textContent = `${count} card${count===1?"":"s"} · stored locally`;
+
+      const idx = count ? (state.index + 1) : 0;
+      posText.textContent = `${idx} / ${count}`;
+      barFill.style.width = count ? `${(idx / count) * 100}%` : "0%";
+
+      const card = getCurrentCard();
+      if(!card){
+        frontText.textContent = "No cards yet. Add one on the left.";
+        backText.textContent = "—";
+        cardIdText.textContent = "—";
+        setFlipped(false);
+      }else{
+        frontText.textContent = card.q || "(empty front)";
+        backText.textContent = card.a || "(empty back)";
+        cardIdText.textContent = card.state ? `state:${card.state}` : `id:${card.id.slice(0,6)}`;
+      }
+
+      prevBtn.disabled = count <= 1;
+      nextBtn.disabled = count <= 1;
+      flipBtn.disabled = count === 0;
+      shuffleBtn.disabled = count <= 1;
+      resetOrderBtn.disabled = count <= 1;
+      markKnownBtn.disabled = count === 0;
+      markReviewBtn.disabled = count === 0;
+      deleteCurrentBtn.disabled = count === 0;
+    }
+
+    function renderList(){
+      const deck = getDeck();
+      cardList.innerHTML = "";
+
+      if(!deck){
+        const p = document.createElement("p");
+        p.className = "tiny";
+        p.textContent = "No deck yet. Click “New deck”, name it, then add cards.";
+        cardList.appendChild(p);
+        return;
+      }
+
+      if(deck.cards.length === 0){
+        const p = document.createElement("p");
+        p.className = "tiny";
+        p.textContent = "No cards yet. Add your first card above.";
+        cardList.appendChild(p);
+        return;
+      }
+
+      deck.cards
+        .slice()
+        .sort((a,b) => a.createdAt - b.createdAt)
+        .forEach((c, i) => {
+          const el = document.createElement("div");
+          el.className = "item";
+          el.innerHTML = `
+            <div>
+              <p class="q">${escapeHTML(c.q || "(empty front)")}</p>
+              <p class="a">${escapeHTML(c.a || "(empty back)")}</p>
+            </div>
+            <div class="actions">
+              <button class="iconbtn" data-act="goto" data-id="${c.id}" title="Jump to this card">go</button>
+              <button class="iconbtn" data-act="edit" data-id="${c.id}" title="Load into editor">edit</button>
+              <button class="iconbtn" data-act="del" data-id="${c.id}" title="Delete">del</button>
+            </div>
+          `;
+          cardList.appendChild(el);
+        });
+
+      cardList.addEventListener("click", onListClick, { once: true });
+    }
+
+    function onListClick(e){
+      const btn = e.target.closest("button[data-act]");
+      if(!btn) { cardList.addEventListener("click", onListClick, { once:true }); return; }
+
+      const act = btn.getAttribute("data-act");
+      const id = btn.getAttribute("data-id");
+      const deck = getDeck();
+      if(!deck) return;
+
+      if(act === "del"){
+        const idx = deck.cards.findIndex(c => c.id === id);
+        if(idx >= 0){
+          deck.cards.splice(idx,1);
+          saveDB();
+          ensureOrder();
+          state.index = Math.min(state.index, Math.max(0, state.order.length - 1));
+          toast("Deleted card");
+          renderAll();
+        }
+      }else if(act === "edit"){
+        const c = deck.cards.find(c => c.id === id);
+        if(c){
+          question.value = c.q;
+          answer.value = c.a;
+          toast("Loaded into editor");
+        }
+      }else if(act === "goto"){
+        ensureOrder();
+        const ordIdx = state.order.indexOf(id);
+        if(ordIdx >= 0){
+          state.index = ordIdx;
+          setFlipped(false);
+          toast("Jumped to card");
+          renderStudy();
+        }
+      }
+
+      cardList.addEventListener("click", onListClick, { once:true });
+    }
+
+    function escapeHTML(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function renderAll(){
+      renderList();
+      renderStudy();
+      $("storageState").textContent = "Storage: local";
+    }
+
+    // -----------------------------
+    // Actions
+    // -----------------------------
+    function newDeck(){
+      const d = { id: uid(), name: deckName.value.trim() || "Untitled deck", createdAt: Date.now(), cards: [] };
+      db.decks.push(d);
+      state.deckId = d.id;
+      state.order = [];
+      state.index = 0;
+      saveDB();
+      toast("New deck created");
+      renderAll();
+    }
+
+    function ensureDeckExists(){
+      const current = getDeck();
+      if(current) return current;
+
+      // If user typed a name, create a deck implicitly
+      const name = deckName.value.trim();
+      const d = { id: uid(), name: name || "Untitled deck", createdAt: Date.now(), cards: [] };
+      db.decks.push(d);
+      state.deckId = d.id;
+      state.order = [];
+      state.index = 0;
+      saveDB();
+      toast("Deck created");
+      return d;
+    }
+
+    function addCard(){
+      const d = ensureDeckExists();
+      const q = question.value.trim();
+      const a = answer.value.trim();
+      if(!q && !a){
+        toast("Type a front or back first");
+        return;
+      }
+      const c = { id: uid(), q, a, createdAt: Date.now(), state: "" };
+      d.cards.push(c);
+
+      question.value = "";
+      answer.value = "";
+      question.focus();
+
+      saveDB();
+      ensureOrder();
+      state.index = Math.max(0, state.order.indexOf(c.id));
+      setFlipped(false);
+      toast("Added card");
+      renderAll();
+    }
+
+    function saveDeckName(){
+      const d = getDeck();
+      if(!d){
+        toast("No deck to save yet");
+        return;
+      }
+      d.name = deckName.value.trim() || "Untitled deck";
+      saveDB();
+      toast("Saved");
+      renderAll();
+    }
+
+    function prev(){
+      const d = getDeck();
+      if(!d || d.cards.length <= 1) return;
+      ensureOrder();
+      state.index = (state.index - 1 + state.order.length) % state.order.length;
+      setFlipped(false);
+      renderStudy();
+    }
+
+    function next(){
+      const d = getDeck();
+      if(!d || d.cards.length <= 1) return;
+      ensureOrder();
+      state.index = (state.index + 1) % state.order.length;
+      setFlipped(false);
+      renderStudy();
+    }
+
+    function flip(){
+      const d = getDeck();
+      if(!d || d.cards.length === 0) return;
+      setFlipped(!state.flipped);
+    }
+
+    function shuffle(){
+      const d = getDeck();
+      if(!d || d.cards.length <= 1) return;
+      ensureOrder();
+      for(let i = state.order.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [state.order[i], state.order[j]] = [state.order[j], state.order[i]];
+      }
+      state.index = 0;
+      setFlipped(false);
+      toast("Shuffled");
+      renderStudy();
+    }
+
+    function resetOrder(){
+      const d = getDeck();
+      if(!d || d.cards.length <= 1) return;
+      state.order = d.cards.slice().sort((a,b)=>a.createdAt-b.createdAt).map(c => c.id);
+      state.index = 0;
+      setFlipped(false);
+      toast("Order reset");
+      renderStudy();
+    }
+
+    function mark(stateName){
+      const c = getCurrentCard();
+      const d = getDeck();
+      if(!d || !c) return;
+      c.state = stateName;
+      saveDB();
+      toast(`Marked ${stateName}`);
+      renderAll();
+    }
+
+    function deleteCurrent(){
+      const d = getDeck();
+      const c = getCurrentCard();
+      if(!d || !c) return;
+      const idx = d.cards.findIndex(x => x.id === c.id);
+      if(idx >= 0){
+        d.cards.splice(idx,1);
+        saveDB();
+        ensureOrder();
+        state.index = Math.min(state.index, Math.max(0, state.order.length - 1));
+        setFlipped(false);
+        toast("Deleted card");
+        renderAll();
+      }
+    }
+
+    function exportJSON(){
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        app: "coldui-flashcards",
+        version: 1,
+        db
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `flashcards-export-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast("Exported JSON");
+    }
+
+    function importJSONFile(file){
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{
+          const data = JSON.parse(String(reader.result || "{}"));
+          const imported = data.db?.decks ? data.db : data; // allow raw db too
+          if(!imported || !Array.isArray(imported.decks)) throw new Error("Invalid format");
+
+          // Merge decks by id (overwrite on conflict)
+          const byId = new Map(db.decks.map(d => [d.id, d]));
+          for(const d of imported.decks){
+            if(!d?.id) continue;
+            byId.set(d.id, d);
+          }
+          db.decks = Array.from(byId.values()).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+
+          // Load the most recent deck
+          const last = db.decks[db.decks.length - 1] || null;
+          state.deckId = last ? last.id : null;
+          state.order = [];
+          state.index = 0;
+          saveDB();
+
+          toast("Imported");
+          if(last) deckName.value = last.name || "Untitled deck";
+          renderAll();
+        }catch(err){
+          toast("Import failed");
+          console.error(err);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function clearAll(){
+      if(!confirm("Delete ALL decks stored in this browser?")) return;
+      db = { decks: [] };
+      state.deckId = null;
+      state.order = [];
+      state.index = 0;
+      localStorage.removeItem(STORAGE_KEY);
+      toast("Cleared");
+      renderAll();
+    }
+
+    function toggleFocus(){
+      state.focus = !state.focus;
+      document.body.style.overflow = state.focus ? "hidden" : "";
+      // Soft focus: scroll to study card and emphasize it
+      flashcard.scrollIntoView({ behavior: "smooth", block: "center" });
+      toast(state.focus ? "Focus on" : "Focus off");
+    }
+
+    // -----------------------------
+    // Init: load last deck (if any)
+    // -----------------------------
+    loadDB();
+    if(db.decks.length){
+      // pick most recent
+      db.decks.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+      const last = db.decks[db.decks.length - 1];
+      state.deckId = last.id;
+      deckName.value = last.name || "Untitled deck";
+      state.order = last.cards.slice().sort((a,b)=>a.createdAt-b.createdAt).map(c => c.id);
+    }
+    renderAll();
+
+    // -----------------------------
+    // Event wiring
+    // -----------------------------
+    addCardBtn.addEventListener("click", addCard);
+    newDeckBtn.addEventListener("click", newDeck);
+    saveDeckBtn.addEventListener("click", saveDeckName);
+    exportBtn.addEventListener("click", exportJSON);
+
+    importBtn.addEventListener("click", () => importFile.click());
+    importFile.addEventListener("change", () => {
+      const f = importFile.files && importFile.files[0];
+      if(f) importJSONFile(f);
+      importFile.value = "";
+    });
+
+    clearAllBtn.addEventListener("click", clearAll);
+
+    prevBtn.addEventListener("click", prev);
+    nextBtn.addEventListener("click", next);
+    flipBtn.addEventListener("click", flip);
+    shuffleBtn.addEventListener("click", shuffle);
+    resetOrderBtn.addEventListener("click", resetOrder);
+    markKnownBtn.addEventListener("click", () => mark("known"));
+    markReviewBtn.addEventListener("click", () => mark("review"));
+    deleteCurrentBtn.addEventListener("click", deleteCurrent);
+
+    flashcard.addEventListener("click", flip);
+
+    // Keyboard controls (ignore while typing)
+    window.addEventListener("keydown", (e) => {
+      const t = /** @type {HTMLElement|null} */ (e.target);
+      const typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+      if(typing){
+        // allow Ctrl/Cmd+Enter to add card quickly
+        if((e.ctrlKey || e.metaKey) && e.key === "Enter"){
+          e.preventDefault();
+          addCard();
+        }
+        return;
+      }
+
+      if(e.key === "ArrowLeft"){ e.preventDefault(); prev(); }
+      else if(e.key === "ArrowRight"){ e.preventDefault(); next(); }
+      else if(e.key === " "){ e.preventDefault(); flip(); }
+      else if(e.key.toLowerCase() === "s"){ shuffle(); }
+      else if(e.key.toLowerCase() === "f"){ toggleFocus(); }
+      else if(e.key.toLowerCase() === "k"){ mark("known"); }
+      else if(e.key.toLowerCase() === "r"){ mark("review"); }
+      else if(e.key === "Delete" || e.key === "Backspace"){
+        // optional: delete current when not typing
+        // guard to avoid accidental deletion: require Shift
+        if(e.shiftKey){ deleteCurrent(); }
+      }
+    });
+  </script>
+</body>
+</html>
