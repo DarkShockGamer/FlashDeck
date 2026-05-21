@@ -87,7 +87,7 @@
 <body>
 <header>
   <h1>Final Exam Flashcards</h1>
-  <div class="sub">Fixed: Flip always changes text live (even if session/order gets out of sync).</div>
+  <div class="sub">Old UI kept. Flip now toggles text live using cached question/answer on the screen.</div>
 </header>
 
 <main class="wrap">
@@ -364,8 +364,12 @@
       faceLabel.textContent="Question";
       flashText.textContent="Select a deck to start studying.";
       flashText.classList.remove("answer");
-      flashText.dataset.mode = "q";
-      delete flashText.dataset.cardId;
+
+      // reset cache for flip
+      flashText.dataset.side = "q";
+      flashText.dataset.q = "";
+      flashText.dataset.a = "";
+
       studyMeta.textContent="Tip: pick a deck on the left.";
       return;
     }
@@ -381,8 +385,11 @@
       faceLabel.textContent="Done";
       flashText.textContent="Session complete. Click Exit deck to bring cards back.";
       flashText.classList.remove("answer");
-      flashText.dataset.mode = "q";
-      delete flashText.dataset.cardId;
+
+      flashText.dataset.side = "q";
+      flashText.dataset.q = "";
+      flashText.dataset.a = "";
+
       studyMeta.textContent="All cards are hidden (marked Know) for this session.";
       return;
     }
@@ -397,41 +404,37 @@
     const know = c.stats?.know ?? 0, dont = c.stats?.dont ?? 0;
     scoreText.textContent = `Know ${know} • Don't ${dont} • Hidden ${session.hiddenIds.size}`;
 
-    const isQ = (session.showing === "q");
-    faceLabel.textContent = isQ ? "Question" : "Answer";
-    flashText.textContent = isQ ? c.question : c.answer;
-    flashText.classList.toggle("answer", !isQ);
+    // Cache current card for instant flip
+    flashText.dataset.q = c.question ?? "";
+    flashText.dataset.a = c.answer ?? "";
+    flashText.dataset.side = "q";
 
-    // IMPORTANT: track what's on screen so Flip can always work
-    flashText.dataset.mode = session.showing;
-    flashText.dataset.cardId = c.id;
+    // Always show question after navigation / re-render
+    faceLabel.textContent = "Question";
+    flashText.textContent = flashText.dataset.q;
+    flashText.classList.remove("answer");
 
     studyMeta.innerHTML = `<b>Topic:</b> ${escapeHtml(c.topic || "—")} &nbsp; <b>Difficulty:</b> ${escapeHtml(c.difficulty || "Medium")}`;
   }
 
   // Actions
   function flip(){
-    const d = currentDeck();
-    if (!d || !Array.isArray(d.cards) || d.cards.length === 0) return;
+    const q = flashText.dataset.q || "";
+    const a = flashText.dataset.a || "";
+    if(!q && !a) return;
 
-    // Use the card that is actually displayed
-    const shownId = flashText.dataset.cardId;
-    const shownCard = shownId ? d.cards.find(x => x.id === shownId) : null;
-
-    // Fallbacks if session/order got out of sync
-    const card = shownCard || currentSessionCard() || d.cards[0];
-    if (!card) return;
-
-    // Toggle mode
-    session.showing = (session.showing === "q") ? "a" : "q";
-
-    // Update UI immediately (no dependency on renderStudy/session correctness)
-    const isQ = (session.showing === "q");
-    faceLabel.textContent = isQ ? "Question" : "Answer";
-    flashText.textContent = isQ ? card.question : card.answer;
-    flashText.classList.toggle("answer", !isQ);
-    flashText.dataset.mode = session.showing;
-    flashText.dataset.cardId = card.id;
+    const side = flashText.dataset.side || "q";
+    if(side === "q"){
+      flashText.dataset.side = "a";
+      faceLabel.textContent = "Answer";
+      flashText.textContent = a;
+      flashText.classList.add("answer");
+    } else {
+      flashText.dataset.side = "q";
+      faceLabel.textContent = "Question";
+      flashText.textContent = q;
+      flashText.classList.remove("answer");
+    }
   }
 
   function next(){
@@ -564,7 +567,7 @@
     URL.revokeObjectURL(url);
   }
 
-  // Event wiring (same as your version)
+  // Event wiring
   btnFlip.addEventListener("click", (e) => { e.preventDefault(); flip(); }, true);
   flash.addEventListener("click", (e) => { e.preventDefault(); flip(); }, true);
 
@@ -629,29 +632,4 @@
 
     if(e.code==="Space"){ e.preventDefault(); flip(); }
     else if(e.key==="ArrowRight") next();
-    else if(e.key==="ArrowLeft") prev();
-    else if(e.key.toLowerCase()==="s") shuffleSession();
-    else if(e.key.toLowerCase()==="k") markKnow();
-    else if(e.key.toLowerCase()==="d") markDont();
-  }, true);
 
-  // Init
-  load();
-  renderDeckSelect();
-
-  if(state.selectedDeckId){
-    setDeckUIEnabled(true);
-    startSession();
-    topicOptions();
-    renderList();
-    renderStudy();
-  } else {
-    setDeckUIEnabled(false);
-    startSession();
-    renderList();
-    renderStudy();
-  }
-})();
-</script>
-</body>
-</html>
