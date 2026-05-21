@@ -3,634 +3,255 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Final Exam Flashcards (Fixed Flip)</title>
+  <title>Flashcards (Simple + Working)</title>
   <style>
-    :root{
-      --bg:#0b1020; --text:#eaf0ff; --muted:#a9b5df;
-      --line: rgba(255,255,255,.12); --shadow: 0 12px 30px rgba(0,0,0,.35);
-      --radius: 16px; --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      --good:#35d07f; --bad:#ff5a7a;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family:var(--sans); color:var(--text);
-      background:
-        radial-gradient(1200px 700px at 20% 0%, rgba(110,168,255,.20), transparent 60%),
-        radial-gradient(900px 600px at 90% 30%, rgba(53,208,127,.14), transparent 55%),
-        var(--bg);
-    }
-    header{padding:24px 18px 10px; max-width:1100px; margin:0 auto;}
-    h1{margin:0 0 6px; font-size:22px}
-    .sub{color:var(--muted); font-size:14px; line-height:1.4}
-
-    .wrap{max-width:1100px; margin:0 auto; padding:14px 18px 40px; display:grid; grid-template-columns:420px 1fr; gap:14px;}
-    @media (max-width:980px){.wrap{grid-template-columns:1fr}}
-
-    .panel{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden;}
-    .hd{padding:14px 14px 12px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:10px; background:rgba(0,0,0,.12);}
-    .hd h2{margin:0; font-size:14px; letter-spacing:.3px; text-transform:uppercase; color:var(--muted);}
-    .bd{padding:14px;}
-
-    .row{display:flex; gap:10px; flex-wrap:wrap}
-    .row>*{flex:1}
-    label{display:block; font-size:12px; color:var(--muted); margin:0 0 6px}
-    input[type="text"], textarea, select{
-      width:100%; background:rgba(10,14,28,.65); border:1px solid var(--line); color:var(--text);
-      border-radius:12px; padding:10px; outline:none; font-size:14px;
-    }
-    textarea{min-height:86px; resize:vertical}
-
-    .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
-    button{
-      appearance:none; border:1px solid var(--line); background:rgba(110,168,255,.12);
-      color:var(--text); padding:10px 12px; border-radius:12px; cursor:pointer; font-weight:700; font-size:13px;
-    }
-    button:hover{border-color:rgba(110,168,255,.55)}
-    button:active{transform:translateY(1px)}
-    button:disabled{opacity:.55; cursor:not-allowed}
-    .ghost{background:rgba(255,255,255,.06)}
-    .danger{background:rgba(255,90,122,.12)}
-    .ok{background:rgba(53,208,127,.14)}
-    .small{padding:8px 10px; font-size:12px}
-
-    .mutedBox{border:1px dashed var(--line); border-radius:16px; padding:14px; color:var(--muted); background:rgba(255,255,255,.04); line-height:1.45; font-size:13px;}
-
-    .list{display:flex; flex-direction:column; gap:10px; max-height:420px; overflow:auto; padding-right:4px;}
-    .item{border:1px solid var(--line); background:rgba(0,0,0,.16); border-radius:14px; padding:10px; display:flex; flex-direction:column; gap:8px;}
-    .meta{display:flex; gap:8px; flex-wrap:wrap}
-    .tag{font-size:11px; padding:3px 8px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background:rgba(255,255,255,.05);}
-    .qPreview{font-weight:800; font-size:13px; line-height:1.35}
-    .aPreview{font-size:12px; color:var(--muted); line-height:1.35}
-    .itemActions{display:flex; gap:8px; justify-content:flex-end}
-    .itemActions button{padding:7px 10px; font-size:12px}
-
-    .studyWrap{display:flex; flex-direction:column; gap:12px}
-    .progress{display:flex; align-items:center; justify-content:space-between; gap:10px; color:var(--muted); font-size:13px;}
-    .bar{flex:1; height:10px; border:1px solid var(--line); border-radius:999px; background:rgba(255,255,255,.05); overflow:hidden;}
-    .bar>div{height:100%; width:0%; background:linear-gradient(90deg, rgba(110,168,255,.95), rgba(53,208,127,.9));}
-
-    .flash{border:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.12)); border-radius:22px; min-height:280px; box-shadow:var(--shadow); position:relative; overflow:hidden;}
-    .flashInner{padding:18px 18px 54px;}
-    .faceLabel{display:inline-block; font-size:11px; letter-spacing:.35px; text-transform:uppercase; color:var(--muted); padding:4px 10px; border:1px solid var(--line); border-radius:999px; background:rgba(255,255,255,.05); margin-bottom:10px;}
-    .flashText{font-size:18px; line-height:1.45; font-weight:800; white-space:pre-wrap;}
-    .flashText.answer{font-weight:650; color:rgba(234,240,255,.92);}
-
-    .bottomBar{position:absolute; left:0; right:0; bottom:0; display:flex; gap:10px; padding:12px; border-top:1px solid var(--line); background:rgba(0,0,0,.22); flex-wrap:wrap;}
-    .bottomBar button{flex:1; min-width:120px}
-
-    .hint{margin-top:10px; font-size:12px; color:var(--muted); line-height:1.45}
-    .kbd{font-family:var(--mono); padding:2px 6px; border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.06); color:var(--text); font-size:12px; white-space:nowrap;}
+    body{font-family:system-ui;margin:24px;background:#0b1020;color:#eaf0ff}
+    h1{margin:0 0 6px;font-size:22px}
+    .sub{opacity:.75;margin:0 0 16px}
+    select,button,input,textarea{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#eaf0ff}
+    button{cursor:pointer}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .card{margin-top:16px;padding:18px;border-radius:16px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);min-height:180px}
+    .label{opacity:.75;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+    .text{margin-top:10px;font-size:24px;white-space:pre-wrap}
+    .meta{margin-top:10px;opacity:.7;font-size:13px}
+    .panel{margin-top:18px;padding:14px;border:1px solid rgba(255,255,255,.2);border-radius:16px;background:rgba(255,255,255,.04)}
+    textarea{width:100%;min-height:80px}
   </style>
 </head>
-
 <body>
-<header>
-  <h1>Final Exam Flashcards</h1>
-  <div class="sub">Fixed: Flip updates instantly. Next/Prev always return to Question. “Know” hides until Exit deck.</div>
-</header>
+  <h1>Flashcards</h1>
+  <p class="sub">
+    Simple version. Flip always changes text live. Uses saved data key:
+    <code>finals_flashcards_decks_v2</code>
+  </p>
 
-<main class="wrap">
-  <section class="panel">
-    <div class="hd">
-      <h2>Decks & cards</h2>
-      <button class="small ghost" id="btnFocusNewDeck">New deck</button>
+  <div class="row">
+    <label>
+      Deck:
+      <select id="deckSelect"></select>
+    </label>
+    <button id="btnPrev">Prev</button>
+    <button id="btnFlip">Flip</button>
+    <button id="btnNext">Next</button>
+  </div>
+
+  <div class="card" id="card" role="button" aria-label="flashcard">
+    <div class="label" id="face">—</div>
+    <div class="text" id="text">Loading…</div>
+    <div class="meta" id="meta"></div>
+  </div>
+
+  <div class="panel">
+    <div class="row">
+      <button id="btnBackup">Backup deck (download JSON)</button>
+      <button id="btnImport">Import deck JSON</button>
+      <input id="importFile" type="file" accept="application/json" style="display:none" />
     </div>
-    <div class="bd">
-      <div class="row">
-        <div>
-          <label for="deckSelect">Selected deck</label>
-          <select id="deckSelect"><option value="">— Select a deck —</option></select>
-        </div>
-        <div>
-          <label for="deckName">Deck name</label>
-          <input id="deckName" type="text" placeholder="e.g., Spanish 1 Final" />
-        </div>
-      </div>
-
-      <div class="btns">
-        <button id="btnCreateDeck">Create deck</button>
-        <button class="ghost" id="btnRenameDeck" disabled>Rename deck</button>
-        <button class="danger" id="btnDeleteDeck" disabled>Delete deck</button>
-        <button class="ghost" id="btnBackupDeck" disabled>Backup deck (JSON)</button>
-      </div>
-
-      <div style="height:14px"></div>
-      <div class="mutedBox" id="deckGate">Select a deck to add cards and study.</div>
-
-      <div id="cardUI" style="display:none">
-        <div class="row">
-          <div>
-            <label for="topic">Topic (optional)</label>
-            <input id="topic" type="text" placeholder="Optional" />
-          </div>
-          <div>
-            <label for="difficulty">Difficulty</label>
-            <select id="difficulty">
-              <option value="Easy">Easy</option>
-              <option value="Medium" selected>Medium</option>
-              <option value="Hard">Hard</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="height:10px"></div>
-        <div>
-          <label for="question">Question</label>
-          <textarea id="question"></textarea>
-        </div>
-
-        <div style="height:10px"></div>
-        <div>
-          <label for="answer">Answer</label>
-          <textarea id="answer"></textarea>
-        </div>
-
-        <div class="btns">
-          <button id="btnAdd">Add card</button>
-          <button class="ghost" id="btnUpdate" disabled>Update selected</button>
-          <button class="ghost" id="btnCancelEdit" disabled>Cancel edit</button>
-        </div>
-
-        <div style="height:14px"></div>
-        <div class="row">
-          <div>
-            <label for="search">Search</label>
-            <input id="search" type="text" placeholder="Search..." />
-          </div>
-          <div>
-            <label for="filterTopic">Filter topic</label>
-            <select id="filterTopic"><option value="">All</option></select>
-          </div>
-        </div>
-
-        <div style="height:12px"></div>
-        <div class="list" id="list"></div>
-
-        <div class="hint">
-          Shortcuts: <span class="kbd">Space</span> flip,
-          <span class="kbd">←</span>/<span class="kbd">→</span> prev/next,
-          <span class="kbd">S</span> shuffle,
-          <span class="kbd">K</span> know (hide),
-          <span class="kbd">D</span> don’t know.
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="panel">
-    <div class="hd">
-      <h2>Study session</h2>
-      <div class="btns" style="margin:0">
-        <button class="small ghost" id="btnShuffle" disabled>Shuffle</button>
-        <button class="small ghost" id="btnExitDeck" disabled>Exit deck</button>
-      </div>
-    </div>
-    <div class="bd">
-      <div class="studyWrap">
-        <div class="progress">
-          <div id="progressText">No deck selected</div>
-          <div class="bar" aria-hidden="true"><div id="barFill"></div></div>
-          <div id="scoreText" style="min-width:210px; text-align:right"></div>
-        </div>
-
-        <div class="flash" id="flash" role="button" aria-label="Flashcard (click to flip)">
-          <div class="flashInner">
-            <div class="faceLabel" id="faceLabel">Question</div>
-            <div class="flashText" id="flashText">Select a deck to start studying.</div>
-          </div>
-
-          <div class="bottomBar">
-            <button class="ghost" id="btnPrev" disabled>Prev</button>
-            <button id="btnFlip" disabled>Flip</button>
-            <button class="ghost" id="btnNext" disabled>Next</button>
-            <button class="ok" id="btnKnow" disabled>Know (hide)</button>
-            <button class="danger" id="btnDont" disabled>Don't know</button>
-          </div>
-        </div>
-
-        <div class="mutedBox" id="studyMeta">Tip: Pick a deck. Flip should work instantly.</div>
-      </div>
-    </div>
-  </section>
-</main>
+    <p class="sub" style="margin:10px 0 0">
+      Tip: Space flips, Arrow keys move.
+    </p>
+  </div>
 
 <script>
 (() => {
   const STORAGE_KEY = "finals_flashcards_decks_v2";
 
-  let state = { selectedDeckId: null, decks: [] };
+  let state = { decks: [], selectedDeckId: null };
+  let deck = null;
+  let index = 0;
+  let showing = "q"; // "q" or "a"
 
-  // Session is not persisted (prevents “stuck on answer forever” across reloads)
-  let session = { order: [], idx: 0, showing: "q", hiddenIds: new Set() };
+  const deckSelect = document.getElementById("deckSelect");
+  const face = document.getElementById("face");
+  const text = document.getElementById("text");
+  const meta = document.getElementById("meta");
+  const btnPrev = document.getElementById("btnPrev");
+  const btnFlip = document.getElementById("btnFlip");
+  const btnNext = document.getElementById("btnNext");
+  const card = document.getElementById("card");
 
-  const $ = (id) => document.getElementById(id);
-  const deckSelect = $("deckSelect"), deckName = $("deckName");
-  const btnCreateDeck = $("btnCreateDeck"), btnRenameDeck = $("btnRenameDeck"),
-        btnDeleteDeck = $("btnDeleteDeck"), btnBackupDeck = $("btnBackupDeck"),
-        btnFocusNewDeck = $("btnFocusNewDeck");
-  const deckGate = $("deckGate"), cardUI = $("cardUI");
-
-  const topic = $("topic"), difficulty = $("difficulty"),
-        question = $("question"), answer = $("answer");
-  const btnAdd = $("btnAdd"), btnUpdate = $("btnUpdate"), btnCancelEdit = $("btnCancelEdit");
-  const search = $("search"), filterTopic = $("filterTopic"), list = $("list");
-
-  const btnShuffle = $("btnShuffle"), btnExitDeck = $("btnExitDeck");
-  const flash = $("flash"), faceLabel = $("faceLabel"), flashText = $("flashText");
-  const btnPrev = $("btnPrev"), btnFlip = $("btnFlip"), btnNext = $("btnNext"),
-        btnKnow = $("btnKnow"), btnDont = $("btnDont");
-  const progressText = $("progressText"), scoreText = $("scoreText"), barFill = $("barFill"), studyMeta = $("studyMeta");
-
-  let editingCardId = null;
+  const btnBackup = document.getElementById("btnBackup");
+  const btnImport = document.getElementById("btnImport");
+  const importFile = document.getElementById("importFile");
 
   const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
-  const norm = (s) => (s || "").toLowerCase().trim();
-  const escapeHtml = (s) => (s ?? "").replace(/[&<>"']/g, (ch) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[ch]));
-  function shuffleInPlace(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } }
 
-  function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-  function load(){
-    try{
+  function loadState() {
+    try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return;
-      const parsed = JSON.parse(raw);
-      if(parsed && Array.isArray(parsed.decks)) state = parsed;
-      if(!state.selectedDeckId || !state.decks.some(d => d.id === state.selectedDeckId)) state.selectedDeckId = null;
-    } catch {}
+      state = raw ? JSON.parse(raw) : { decks: [], selectedDeckId: null };
+      state.decks = Array.isArray(state.decks) ? state.decks : [];
+    } catch {
+      state = { decks: [], selectedDeckId: null };
+    }
   }
 
-  function currentDeck(){ return state.selectedDeckId ? (state.decks.find(d => d.id === state.selectedDeckId) || null) : null; }
-  function currentCards(){ const d=currentDeck(); return d ? (d.cards||[]) : []; }
-  function findCard(id){ return currentCards().find(c => c.id === id) || null; }
-
-  function setDeckUIEnabled(enabled){
-    cardUI.style.display = enabled ? "" : "none";
-    deckGate.style.display = enabled ? "none" : "";
-    btnRenameDeck.disabled = !enabled;
-    btnDeleteDeck.disabled = !enabled;
-    btnBackupDeck.disabled = !enabled;
-    btnShuffle.disabled = !enabled;
-    btnExitDeck.disabled = !enabled;
-  }
-  function setStudyControlsEnabled(enabled){
-    btnPrev.disabled = !enabled;
-    btnFlip.disabled = !enabled;
-    btnNext.disabled = !enabled;
-    btnKnow.disabled = !enabled;
-    btnDont.disabled = !enabled;
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
   }
 
-  function renderDeckSelect(){
-    deckSelect.innerHTML =
-      `<option value="">— Select a deck —</option>` +
-      state.decks.slice().sort((a,b)=>(a.name||"").localeCompare(b.name||""))
-        .map(d => `<option value="${escapeHtml(d.id)}">${escapeHtml(d.name || "Untitled deck")}</option>`)
-        .join("");
-    deckSelect.value = state.selectedDeckId || "";
+  function setDeckById(id) {
+    deck = state.decks.find(d => d.id === id) || state.decks[0] || null;
+    index = 0;
+    showing = "q";
+    if (deck) {
+      state.selectedDeckId = deck.id;
+      saveState();
+    }
+    render();
   }
 
-  function startSession(){
-    const d = currentDeck();
-    session.hiddenIds = new Set();
-    session.idx = 0;
-    session.showing = "q";
-    session.order = d ? (d.cards||[]).map(c => c.id) : [];
+  function currentCard() {
+    if (!deck || !Array.isArray(deck.cards) || deck.cards.length === 0) return null;
+    if (index < 0) index = 0;
+    if (index >= deck.cards.length) index = deck.cards.length - 1;
+    return deck.cards[index];
   }
 
-  function visibleOrder(){ return session.order.filter(id => !session.hiddenIds.has(id)); }
-  function clampIdx(i, arr){ if(arr.length===0) return 0; return Math.max(0, Math.min(arr.length-1, i)); }
-  function currentSessionCard(){
-    const vis = visibleOrder();
-    if(vis.length===0) return null;
-    session.idx = clampIdx(session.idx, vis);
-    return findCard(vis[session.idx]);
-  }
+  function render() {
+    const c = currentCard();
 
-  function topicOptions(){
-    const topics = [...new Set(currentCards().map(c=>c.topic).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-    const prev = filterTopic.value;
-    filterTopic.innerHTML = `<option value="">All</option>` + topics.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
-    if(topics.includes(prev)) filterTopic.value = prev;
-  }
-
-  function filteredCards(){
-    const cards = currentCards();
-    const q = norm(search.value);
-    const t = filterTopic.value;
-    return cards.filter(c => {
-      if(t && c.topic !== t) return false;
-      if(!q) return true;
-      return norm(c.topic).includes(q) || norm(c.difficulty).includes(q) || norm(c.question).includes(q) || norm(c.answer).includes(q);
-    });
-  }
-
-  function renderList(){
-    const d=currentDeck();
-    if(!d){ list.innerHTML=""; return; }
-    const arr = filteredCards();
-    if(arr.length===0){ list.innerHTML=`<div class="mutedBox">No cards match your search/filter.</div>`; return; }
-    list.innerHTML = arr.map(c=>{
-      const selected = (c.id===editingCardId) ? `style="border-color: rgba(110,168,255,.65)"` : "";
-      return `
-        <div class="item" ${selected}>
-          <div>
-            <div class="meta">
-              ${c.topic ? `<span class="tag">${escapeHtml(c.topic)}</span>` : `<span class="tag">No topic</span>`}
-              <span class="tag">${escapeHtml(c.difficulty || "Medium")}</span>
-              <span class="tag">Know: ${c.stats?.know ?? 0}</span>
-              <span class="tag">Don't: ${c.stats?.dont ?? 0}</span>
-            </div>
-            <div class="qPreview">${escapeHtml(c.question).slice(0,120)}${c.question.length>120?"…":""}</div>
-            <div class="aPreview">${escapeHtml(c.answer).slice(0,120)}${c.answer.length>120?"…":""}</div>
-          </div>
-          <div class="itemActions">
-            <button class="ghost" data-act="jump" data-id="${c.id}">Study</button>
-            <button class="ghost" data-act="edit" data-id="${c.id}">Edit</button>
-            <button class="danger" data-act="del" data-id="${c.id}">Delete</button>
-          </div>
-        </div>
-      `;
-    }).join("");
-  }
-
-  function renderStudy(){
-    const d=currentDeck();
-    if(!d){
-      setStudyControlsEnabled(false);
-      progressText.textContent="No deck selected";
-      scoreText.textContent="";
-      barFill.style.width="0%";
-      faceLabel.textContent="Question";
-      flashText.textContent="Select a deck to start studying.";
-      flashText.classList.remove("answer");
-      studyMeta.textContent="Tip: pick a deck on the left.";
+    if (!deck) {
+      deckSelect.innerHTML = `<option value="">No decks found</option>`;
+      face.textContent = "No deck";
+      text.textContent = "Import a deck JSON, then select it.";
+      meta.textContent = "";
+      btnPrev.disabled = btnFlip.disabled = btnNext.disabled = true;
       return;
     }
 
-    const vis = visibleOrder();
-    const c = currentSessionCard();
-
-    if(!c){
-      setStudyControlsEnabled(false);
-      progressText.textContent=`${d.name || "Deck"}: done`;
-      scoreText.textContent=`Hidden: ${session.hiddenIds.size} • Total: ${(d.cards||[]).length}`;
-      barFill.style.width="100%";
-      faceLabel.textContent="Done";
-      flashText.textContent="Session complete. Click Exit deck to bring cards back.";
-      flashText.classList.remove("answer");
-      studyMeta.textContent="All cards are hidden (marked Know) for this session.";
+    if (!c) {
+      face.textContent = "Empty deck";
+      text.textContent = "This deck has no cards.";
+      meta.textContent = deck.name || "Deck";
+      btnPrev.disabled = btnFlip.disabled = btnNext.disabled = true;
       return;
     }
 
-    setStudyControlsEnabled(true);
+    btnPrev.disabled = btnFlip.disabled = btnNext.disabled = false;
 
-    const pos = clampIdx(session.idx, vis) + 1;
-    const total = vis.length;
-    barFill.style.width = (pos/total*100).toFixed(0) + "%";
-    progressText.textContent = `${d.name || "Deck"}: card ${pos} of ${total}`;
-
-    const know = c.stats?.know ?? 0, dont = c.stats?.dont ?? 0;
-    scoreText.textContent = `Know ${know} • Don't ${dont} • Hidden ${session.hiddenIds.size}`;
-
-    const isQ = (session.showing === "q");
-    faceLabel.textContent = isQ ? "Question" : "Answer";
-    flashText.textContent = isQ ? c.question : c.answer;
-    flashText.classList.toggle("answer", !isQ);
-
-    // Set dataset too (helps debugging)
-    flashText.dataset.mode = session.showing;
-
-    studyMeta.innerHTML = `<b>Topic:</b> ${escapeHtml(c.topic || "—")} &nbsp; <b>Difficulty:</b> ${escapeHtml(c.difficulty || "Medium")}`;
+    face.textContent = (showing === "q") ? "Question" : "Answer";
+    text.textContent = (showing === "q") ? c.question : c.answer;
+    meta.textContent = `${deck.name || "Deck"} — card ${index + 1} of ${deck.cards.length}`;
   }
 
-  // Actions
-  function flip(){
-    if(!currentSessionCard()) return;
-    session.showing = (session.showing === "q") ? "a" : "q";
-    renderStudy();
-  }
-  function next(){
-    const vis = visibleOrder();
-    if(vis.length===0) return;
-    session.idx = clampIdx(session.idx + 1, vis);
-    session.showing = "q";
-    renderStudy();
-  }
-  function prev(){
-    const vis = visibleOrder();
-    if(vis.length===0) return;
-    session.idx = clampIdx(session.idx - 1, vis);
-    session.showing = "q";
-    renderStudy();
-  }
-  function markKnow(){
-    const c=currentSessionCard(); if(!c) return;
-    c.stats = c.stats || {know:0,dont:0};
-    c.stats.know++;
-    session.hiddenIds.add(c.id);
-    session.showing="q";
-    renderList(); renderStudy(); save();
-  }
-  function markDont(){
-    const c=currentSessionCard(); if(!c) return;
-    c.stats = c.stats || {know:0,dont:0};
-    c.stats.dont++;
-    session.showing="q";
-    renderList(); renderStudy(); save();
-  }
-  function shuffleSession(){
-    shuffleInPlace(session.order);
-    session.idx=0;
-    session.showing="q";
-    renderStudy();
-  }
-  function exitDeck(){
-    session.hiddenIds = new Set();
-    session.idx=0;
-    session.showing="q";
-    renderStudy();
+  function flip() {
+    // THIS is the simple “make text change live”
+    if (!currentCard()) return;
+    showing = (showing === "q") ? "a" : "q";
+    render();
   }
 
-  function exitEdit(){
-    editingCardId=null;
-    btnAdd.disabled=false; btnUpdate.disabled=true; btnCancelEdit.disabled=true;
-    topic.value=""; difficulty.value="Medium"; question.value=""; answer.value="";
-    renderList();
-  }
-  function enterEdit(cardId){
-    const c=findCard(cardId); if(!c) return;
-    editingCardId=c.id;
-    topic.value=c.topic||""; difficulty.value=c.difficulty||"Medium";
-    question.value=c.question||""; answer.value=c.answer||"";
-    btnAdd.disabled=true; btnUpdate.disabled=false; btnCancelEdit.disabled=false;
-    renderList();
+  function next() {
+    if (!currentCard()) return;
+    index = Math.min(deck.cards.length - 1, index + 1);
+    showing = "q";
+    render();
   }
 
-  function addCard(){
-    const d=currentDeck(); if(!d) return;
-    const q=question.value.trim(), a=answer.value.trim();
-    if(!q || !a) return alert("Please fill in both question and answer.");
-    const c={ id:uid(), topic:topic.value.trim(), difficulty:difficulty.value, question:q, answer:a, stats:{know:0,dont:0} };
-    d.cards = d.cards || [];
-    d.cards.unshift(c);
-    session.order.unshift(c.id);
-    session.idx=0; session.showing="q";
-    topicOptions(); renderList(); renderStudy(); save();
-    question.value=""; answer.value=""; question.focus();
-  }
-  function updateCard(){
-    const d=currentDeck(); if(!d || !editingCardId) return;
-    const c=findCard(editingCardId); if(!c) return;
-    const q=question.value.trim(), a=answer.value.trim();
-    if(!q || !a) return alert("Please fill in both question and answer.");
-    c.topic=topic.value.trim(); c.difficulty=difficulty.value; c.question=q; c.answer=a;
-    topicOptions(); renderList(); renderStudy(); save(); exitEdit();
-  }
-  function deleteCard(cardId){
-    const d=currentDeck(); if(!d) return;
-    if(!confirm("Delete this card?")) return;
-    d.cards=(d.cards||[]).filter(c=>c.id!==cardId);
-    session.order=session.order.filter(id=>id!==cardId);
-    session.hiddenIds.delete(cardId);
-    if(editingCardId===cardId) exitEdit();
-    topicOptions(); renderList(); renderStudy(); save();
+  function prev() {
+    if (!currentCard()) return;
+    index = Math.max(0, index - 1);
+    showing = "q";
+    render();
   }
 
-  function createDeck(){
-    const name=deckName.value.trim();
-    if(!name) return alert("Type a deck name first.");
-    const d={ id:uid(), name, cards:[] };
-    state.decks.push(d);
-    state.selectedDeckId=d.id;
-    renderDeckSelect();
-    setDeckUIEnabled(true);
-    startSession();
-    exitEdit();
-    topicOptions(); renderList(); renderStudy();
-    save();
-    deckName.value="";
-  }
-  function renameDeck(){
-    const d=currentDeck(); if(!d) return;
-    const name=deckName.value.trim();
-    if(!name) return alert("Type a new deck name.");
-    d.name=name;
-    renderDeckSelect(); renderStudy(); save();
-    deckName.value="";
-  }
-  function deleteDeck(){
-    const d=currentDeck(); if(!d) return;
-    if(!confirm(`Delete deck "${d.name || "Untitled"}" and all cards?`)) return;
-    state.decks=state.decks.filter(x=>x.id!==d.id);
-    state.selectedDeckId=null;
-    startSession();
-    setDeckUIEnabled(false);
-    renderDeckSelect();
-    exitEdit();
-    renderList(); renderStudy(); save();
-  }
-  function backupDeck(){
-    const d=currentDeck(); if(!d) return;
-    const blob=new Blob([JSON.stringify({exported_at:new Date().toISOString(), deck:d}, null, 2)], {type:"application/json"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url; a.download=(d.name||"deck").replace(/[^\w\-]+/g,"_")+"_backup.json";
-    document.body.appendChild(a); a.click(); a.remove();
+  function downloadJson(filename, obj) {
+    const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
     URL.revokeObjectURL(url);
   }
 
-  // --- EVENT WIRING (FIXED + HARDENED) ---
-  // We wire Flip in CAPTURE mode too, so it always fires even if something else is weird.
-  btnFlip.addEventListener("click", (e) => { e.preventDefault(); flip(); }, true);
-  flash.addEventListener("click", (e) => { e.preventDefault(); flip(); }, true);
-
-  btnNext.addEventListener("click", (e) => { e.preventDefault(); next(); }, true);
-  btnPrev.addEventListener("click", (e) => { e.preventDefault(); prev(); }, true);
-  btnKnow.addEventListener("click", (e) => { e.preventDefault(); markKnow(); }, true);
-  btnDont.addEventListener("click", (e) => { e.preventDefault(); markDont(); }, true);
-
-  btnShuffle.addEventListener("click", (e) => { e.preventDefault(); shuffleSession(); }, true);
-  btnExitDeck.addEventListener("click", (e) => { e.preventDefault(); exitDeck(); }, true);
-
-  // Deck buttons
-  btnCreateDeck.addEventListener("click", createDeck);
-  btnRenameDeck.addEventListener("click", renameDeck);
-  btnDeleteDeck.addEventListener("click", deleteDeck);
-  btnBackupDeck.addEventListener("click", backupDeck);
-  btnFocusNewDeck.addEventListener("click", ()=>deckName.focus());
-
-  deckSelect.addEventListener("change", () => {
-    state.selectedDeckId = deckSelect.value || null;
-    if(!state.selectedDeckId){
-      setDeckUIEnabled(false);
-      startSession();
-      exitEdit();
-      renderList(); renderStudy(); save();
+  // Import (adds deck to state)
+  function importDeckObject(parsed) {
+    const incoming = parsed.deck || parsed; // accept {deck:{...}} or just deck
+    if (!incoming || !Array.isArray(incoming.cards)) {
+      alert("Not a valid deck JSON (missing cards).");
       return;
     }
-    setDeckUIEnabled(true);
-    startSession();
-    exitEdit();
-    topicOptions(); renderList(); renderStudy(); save();
-  });
 
-  // Cards
-  btnAdd.addEventListener("click", addCard);
-  btnUpdate.addEventListener("click", updateCard);
-  btnCancelEdit.addEventListener("click", exitEdit);
+    const cleaned = {
+      id: (typeof incoming.id === "string" && incoming.id) ? incoming.id : uid(),
+      name: (typeof incoming.name === "string" && incoming.name) ? incoming.name : "Imported deck",
+      cards: incoming.cards
+        .filter(c => c && typeof c.question === "string" && typeof c.answer === "string")
+        .map(c => ({
+          id: (typeof c.id === "string" && c.id) ? c.id : uid(),
+          topic: typeof c.topic === "string" ? c.topic : "",
+          difficulty: ["Easy","Medium","Hard"].includes(c.difficulty) ? c.difficulty : "Medium",
+          question: c.question,
+          answer: c.answer,
+          stats: {
+            know: Number(c.stats?.know ?? 0) || 0,
+            dont: Number(c.stats?.dont ?? 0) || 0
+          }
+        }))
+    };
 
-  search.addEventListener("input", renderList);
-  filterTopic.addEventListener("change", renderList);
+    if (state.decks.some(d => d.id === cleaned.id)) cleaned.id = uid();
+    state.decks.push(cleaned);
+    state.selectedDeckId = cleaned.id;
+    saveState();
+    initDeckSelect();
+    setDeckById(cleaned.id);
+    alert(`Imported "${cleaned.name}" (${cleaned.cards.length} cards).`);
+  }
 
-  list.addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-act]");
-    if(!btn) return;
-    const act=btn.getAttribute("data-act");
-    const id=btn.getAttribute("data-id");
-    if(!id) return;
-    if(act==="edit") enterEdit(id);
-    if(act==="del") deleteCard(id);
-    if(act==="jump"){
-      const vis=visibleOrder();
-      let i=vis.indexOf(id);
-      if(i<0){ session.hiddenIds.delete(id); i=visibleOrder().indexOf(id); }
-      session.idx = (i>=0) ? i : 0;
-      session.showing="q";
-      renderStudy();
+  function initDeckSelect() {
+    if (state.decks.length === 0) {
+      deckSelect.innerHTML = `<option value="">No decks found</option>`;
+      return;
     }
-  });
+    deckSelect.innerHTML = state.decks.map(d => `<option value="${d.id}">${d.name || "Untitled deck"}</option>`).join("");
+  }
+
+  // Events
+  btnFlip.addEventListener("click", (e) => { e.preventDefault(); flip(); });
+  card.addEventListener("click", flip);
+  btnNext.addEventListener("click", (e) => { e.preventDefault(); next(); });
+  btnPrev.addEventListener("click", (e) => { e.preventDefault(); prev(); });
+
+  deckSelect.addEventListener("change", () => setDeckById(deckSelect.value));
 
   document.addEventListener("keydown", (e) => {
-    const tag=(e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-    if(tag==="input"||tag==="textarea"||tag==="select") return;
-    if(!currentDeck()) return;
+    const tag = (e.target && e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if (e.code === "Space") { e.preventDefault(); flip(); }
+    else if (e.key === "ArrowRight") next();
+    else if (e.key === "ArrowLeft") prev();
+  });
 
-    if(e.code==="Space"){ e.preventDefault(); flip(); }
-    else if(e.key==="ArrowRight") next();
-    else if(e.key==="ArrowLeft") prev();
-    else if(e.key.toLowerCase()==="s") shuffleSession();
-    else if(e.key.toLowerCase()==="k") markKnow();
-    else if(e.key.toLowerCase()==="d") markDont();
-  }, true);
+  btnBackup.addEventListener("click", () => {
+    if (!deck) return alert("No deck selected.");
+    downloadJson((deck.name || "deck").replace(/[^\w\-]+/g,"_") + "_BACKUP.json", {
+      exported_at: new Date().toISOString(),
+      deck
+    });
+  });
+
+  btnImport.addEventListener("click", () => importFile.click());
+  importFile.addEventListener("change", async () => {
+    const file = importFile.files && importFile.files[0];
+    if (!file) return;
+    const text = await file.text();
+    try {
+      importDeckObject(JSON.parse(text));
+    } catch {
+      alert("Could not read that JSON file.");
+    }
+    importFile.value = "";
+  });
 
   // Init
-  load();
-  renderDeckSelect();
+  loadState();
+  initDeckSelect();
 
-  if(state.selectedDeckId){
-    setDeckUIEnabled(true);
-    startSession();
-    topicOptions();
-    renderList();
-    renderStudy();
-  } else {
-    setDeckUIEnabled(false);
-    startSession();
-    renderList();
-    renderStudy();
-  }
-})();
-</script>
-</body>
-</html>
+  const initial =
+    (state
