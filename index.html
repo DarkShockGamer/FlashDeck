@@ -3,127 +3,507 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Flashcards (Chromebook Working)</title>
+  <title>Flashcards</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg:#0b1020; --text:#eaf0ff; --muted:#a9b5df;
-      --line: rgba(255,255,255,.12); --shadow: 0 12px 30px rgba(0,0,0,.35);
-      --radius: 16px;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      --good:#35d07f; --bad:#ff5a7a; --accent:#6ea8ff;
+    :root {
+      --bg: #0e0f14;
+      --surface: #15171f;
+      --surface2: #1c1f2b;
+      --surface3: #222636;
+      --border: rgba(255,255,255,.07);
+      --border2: rgba(255,255,255,.12);
+      --text: #e8ecf7;
+      --muted: #7a829e;
+      --hint: #454d66;
+      --accent: #7b93ff;
+      --accent2: #5c78f5;
+      --green: #3ecf8e;
+      --green-bg: rgba(62,207,142,.1);
+      --green-border: rgba(62,207,142,.25);
+      --red: #f06b6b;
+      --red-bg: rgba(240,107,107,.1);
+      --red-border: rgba(240,107,107,.25);
+      --amber: #f5a623;
+      --amber-bg: rgba(245,166,35,.1);
+      --amber-border: rgba(245,166,35,.25);
+      --radius: 14px;
+      --radius-sm: 8px;
+      --radius-lg: 20px;
+      --sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+      --mono: 'DM Mono', ui-monospace, monospace;
+      --serif: 'DM Serif Display', Georgia, serif;
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family:var(--sans); color:var(--text);
-      background:
-        radial-gradient(1200px 700px at 20% 0%, rgba(110,168,255,.20), transparent 60%),
-        radial-gradient(900px 600px at 90% 30%, rgba(53,208,127,.14), transparent 55%),
-        var(--bg);
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
     }
-    header{padding:22px 18px 10px; max-width:1100px; margin:0 auto;}
-    h1{margin:0 0 6px; font-size:22px}
-    .sub{color:var(--muted); font-size:14px; line-height:1.4}
 
-    .wrap{max-width:1100px; margin:0 auto; padding:14px 18px 40px; display:grid; grid-template-columns:420px 1fr; gap:14px;}
-    @media (max-width:980px){.wrap{grid-template-columns:1fr}}
-
-    .panel{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden;}
-    .hd{padding:14px 14px 12px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:10px; background:rgba(0,0,0,.12);}
-    .hd h2{margin:0; font-size:14px; letter-spacing:.3px; text-transform:uppercase; color:var(--muted);}
-    .bd{padding:14px;}
-
-    label{display:block; font-size:12px; color:var(--muted); margin:0 0 6px}
-    input[type="text"], textarea, select{
-      width:100%; background:rgba(10,14,28,.65); border:1px solid var(--line); color:var(--text);
-      border-radius:12px; padding:10px; outline:none; font-size:14px;
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
     }
-    textarea{min-height:80px; resize:vertical}
-
-    .row{display:flex; gap:10px; flex-wrap:wrap}
-    .row>*{flex:1}
-
-    .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
-    button{
-      appearance:none; border:1px solid var(--line); background:rgba(110,168,255,.12);
-      color:var(--text); padding:10px 12px; border-radius:12px; cursor:pointer; font-weight:700; font-size:13px;
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
     }
-    button:hover{border-color:rgba(110,168,255,.55)}
-    button:active{transform:translateY(1px)}
-    button:disabled{opacity:.55; cursor:not-allowed}
-    .ghost{background:rgba(255,255,255,.06)}
-    .danger{background:rgba(255,90,122,.12)}
-    .ok{background:rgba(53,208,127,.14)}
 
-    .mutedBox{border:1px dashed var(--line); border-radius:16px; padding:14px; color:var(--muted); background:rgba(255,255,255,.04); line-height:1.45; font-size:13px;}
+    /* ── Header ── */
+    .header {
+      grid-column: 1 / -1;
+      padding: 18px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--surface);
+    }
+    .logo {
+      font-family: var(--serif);
+      font-size: 22px;
+      color: var(--text);
+      letter-spacing: .01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+    }
+    .header-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+    }
 
-    .list{display:flex; flex-direction:column; gap:10px; max-height:420px; overflow:auto; padding-right:4px;}
-    .item{border:1px solid var(--line); background:rgba(0,0,0,.16); border-radius:14px; padding:10px; display:flex; flex-direction:column; gap:8px;}
-    .meta{display:flex; gap:8px; flex-wrap:wrap}
-    .tag{font-size:11px; padding:3px 8px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background:rgba(255,255,255,.05);}
-    .qPreview{font-weight:800; font-size:13px; line-height:1.35}
-    .aPreview{font-size:12px; color:var(--muted); line-height:1.35}
-    .itemActions{display:flex; gap:8px; justify-content:flex-end}
-    .itemActions button{padding:7px 10px; font-size:12px}
+    /* ── Panels ── */
+    .left-panel {
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .right-panel {
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+    }
 
-    .progress{display:flex; align-items:center; justify-content:space-between; gap:10px; color:var(--muted); font-size:13px;}
-    .bar{flex:1; height:10px; border:1px solid var(--line); border-radius:999px; background:rgba(255,255,255,.05); overflow:hidden;}
-    .bar>div{height:100%; width:0%; background:linear-gradient(90deg, rgba(110,168,255,.95), rgba(53,208,127,.9));}
+    .panel-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .panel-head h2 {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+    .panel-body {
+      padding: 18px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .panel-body > * + * { margin-top: 14px; }
 
-    .flash{border:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.12)); border-radius:22px; min-height:280px; box-shadow:var(--shadow); position:relative; overflow:hidden;}
-    .flashInner{padding:18px 18px 54px;}
-    .faceLabel{display:inline-block; font-size:11px; letter-spacing:.35px; text-transform:uppercase; color:var(--muted); padding:4px 10px; border:1px solid var(--line); border-radius:999px; background:rgba(255,255,255,.05); margin-bottom:10px;}
-    .flashText{font-size:18px; line-height:1.45; font-weight:800; white-space:pre-wrap;}
-    .flashText.answer{font-weight:650; color:rgba(234,240,255,.92);}
+    /* ── Form elements ── */
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 5px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      font-family: var(--mono);
+    }
+    input[type="text"], textarea, select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      border-radius: var(--radius-sm);
+      padding: 9px 11px;
+      outline: none;
+      font-size: 13px;
+      font-family: var(--sans);
+      transition: border-color .15s, background .15s;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus {
+      border-color: rgba(123,147,255,.45);
+      background: var(--surface3);
+    }
+    select { cursor: pointer; }
+    textarea { min-height: 72px; resize: vertical; }
 
-    .bottomBar{position:absolute; left:0; right:0; bottom:0; display:flex; gap:10px; padding:12px; border-top:1px solid var(--line); background:rgba(0,0,0,.22); flex-wrap:wrap;}
-    .bottomBar button{flex:1; min-width:120px}
+    .row { display: flex; gap: 10px; }
+    .row > * { flex: 1; min-width: 0; }
+
+    /* ── Buttons ── */
+    button {
+      appearance: none;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 9px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      color: var(--text);
+      cursor: pointer;
+      transition: background .12s, border-color .12s, transform .08s, opacity .12s;
+      white-space: nowrap;
+    }
+    button:hover { background: var(--surface3); border-color: rgba(255,255,255,.18); }
+    button:active { transform: scale(.97); }
+    button:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+
+    .btn-primary {
+      background: rgba(123,147,255,.15);
+      border-color: rgba(123,147,255,.35);
+      color: var(--accent);
+    }
+    .btn-primary:hover { background: rgba(123,147,255,.22); }
+    .btn-danger {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+      color: var(--red);
+    }
+    .btn-danger:hover { background: rgba(240,107,107,.16); }
+    .btn-success {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+      color: var(--green);
+    }
+    .btn-success:hover { background: rgba(62,207,142,.16); }
+    .btn-sm { padding: 6px 11px; font-size: 12px; }
+    .btn-icon { padding: 7px 10px; }
+
+    .hstack { display: flex; gap: 8px; flex-wrap: wrap; }
+    .vstack { display: flex; flex-direction: column; gap: 10px; }
+
+    /* ── Divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 4px 0;
+    }
+
+    /* ── Empty state ── */
+    .empty {
+      border: 1px dashed var(--border2);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      color: var(--hint);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* ── Card list ── */
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    .card-list::-webkit-scrollbar { width: 4px; }
+    .card-list::-webkit-scrollbar-track { background: transparent; }
+    .card-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+    .card-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 11px 13px;
+      background: var(--surface2);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: border-color .15s;
+    }
+    .card-item:hover { border-color: var(--border2); }
+    .card-item .q { font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--text); }
+    .card-item .a { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+    .tags { display: flex; gap: 5px; flex-wrap: wrap; }
+    .tag {
+      font-size: 10px;
+      font-family: var(--mono);
+      padding: 2px 7px;
+      border-radius: 99px;
+      border: 1px solid var(--border2);
+      color: var(--muted);
+      background: var(--surface3);
+    }
+    .tag.hard { border-color: var(--red-border); color: var(--red); background: var(--red-bg); }
+    .tag.easy { border-color: var(--green-border); color: var(--green); background: var(--green-bg); }
+    .tag.requeue { border-color: var(--amber-border); color: var(--amber); background: var(--amber-bg); }
+
+    /* ── Progress ── */
+    .progress-wrap { padding: 16px 20px 14px; }
+    .progress-bar {
+      height: 3px;
+      background: var(--surface3);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent2), var(--green));
+      border-radius: 99px;
+      transition: width .4s cubic-bezier(.4,0,.2,1);
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--muted);
+    }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 0 20px 14px;
+    }
+    .stat-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 24px;
+      font-family: var(--serif);
+      font-weight: 400;
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+    .stat-lbl {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .stat-box.good .stat-num { color: var(--green); }
+    .stat-box.bad .stat-num { color: var(--red); }
+    .stat-box.info .stat-num { color: var(--accent); }
+
+    /* ── Flashcard ── */
+    .flash-area { padding: 0 20px 20px; flex: 1; }
+
+    .flash-card {
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color .2s, background .2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .flash-card:hover { border-color: rgba(255,255,255,.16); }
+    .flash-card.flipped {
+      border-color: rgba(123,147,255,.4);
+      background: rgba(123,147,255,.04);
+    }
+    .flash-card.requeued {
+      border-color: var(--amber-border);
+    }
+
+    .flash-inner {
+      padding: 24px 24px 12px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .face-label {
+      font-size: 10px;
+      font-family: var(--mono);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--hint);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .face-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .flash-text {
+      font-size: 18px;
+      font-family: var(--serif);
+      font-style: italic;
+      line-height: 1.55;
+      flex: 1;
+      white-space: pre-wrap;
+      color: var(--text);
+    }
+    .flash-text.answer {
+      font-style: normal;
+      font-family: var(--sans);
+      font-size: 16px;
+      font-weight: 300;
+      color: rgba(232,236,247,.85);
+    }
+
+    .flash-meta {
+      padding: 0 24px 14px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .requeue-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      font-size: 10px;
+      font-family: var(--mono);
+      padding: 3px 9px;
+      border-radius: 99px;
+      background: var(--amber-bg);
+      border: 1px solid var(--amber-border);
+      color: var(--amber);
+      display: none;
+      letter-spacing: .04em;
+    }
+    .requeue-badge.visible { display: block; }
+
+    /* ── Action bar ── */
+    .action-bar {
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      background: var(--surface2);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    }
+    .nav-btns { display: flex; gap: 6px; }
+    .flip-center { display: flex; justify-content: center; }
+    .rate-btns { display: flex; gap: 6px; }
+
+    /* ── Keyboard hint ── */
+    .kbd-hint {
+      margin: 10px 20px 0;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--hint);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    kbd {
+      display: inline-block;
+      padding: 1px 5px;
+      background: var(--surface3);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    /* ── Scrollbar global ── */
+    .panel-body::-webkit-scrollbar { width: 4px; }
+    .panel-body::-webkit-scrollbar-track { background: transparent; }
+    .panel-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
   </style>
 </head>
 <body>
-<header>
-  <h1>Flashcards</h1>
-  <div class="sub">
-    Chromebook-safe. Flip always changes text live.
-    Data is saved in <code>localStorage</code> key <code>finals_flashcards_decks_v2</code>.
-  </div>
-</header>
 
-<main class="wrap">
-  <!-- Left: decks + cards -->
-  <section class="panel">
-    <div class="hd">
-      <h2>Decks & cards</h2>
-      <div class="btns" style="margin:0">
-        <button class="ghost" id="btnExportAll">Export all</button>
-        <button class="ghost" id="btnImportAll">Import</button>
-        <input id="importFile" type="file" accept="application/json" style="display:none" />
-      </div>
+<div class="layout">
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-dot"></span>
+      Flashcards
     </div>
-    <div class="bd">
+    <div class="header-actions">
+      <button class="btn-sm" id="btnExport" title="Export all decks as JSON">Export</button>
+      <button class="btn-sm" id="btnImport" title="Import decks from JSON">Import</button>
+      <input id="importFile" type="file" accept="application/json" style="display:none" />
+    </div>
+  </header>
+
+  <!-- Left: Decks & Cards -->
+  <section class="left-panel">
+    <div class="panel-head">
+      <h2>Decks &amp; cards</h2>
+    </div>
+    <div class="panel-body">
+      <!-- Deck selector -->
       <div class="row">
         <div>
-          <label for="deckSelect">Selected deck</label>
+          <label for="deckSelect">Active deck</label>
           <select id="deckSelect"></select>
         </div>
         <div>
-          <label for="deckName">New deck name</label>
-          <input id="deckName" type="text" placeholder="e.g., Spanish 1 Final" />
+          <label for="deckName">New deck</label>
+          <input id="deckName" type="text" placeholder="Deck name…" />
         </div>
       </div>
-
-      <div class="btns">
-        <button id="btnCreateDeck">Create deck</button>
-        <button class="danger" id="btnDeleteDeck" disabled>Delete deck</button>
+      <div class="hstack">
+        <button class="btn-primary" id="btnCreateDeck">Create deck</button>
+        <button class="btn-danger" id="btnDeleteDeck" disabled>Delete deck</button>
       </div>
 
-      <div style="height:12px"></div>
+      <hr class="divider" />
 
-      <div id="deckGate" class="mutedBox">Create/select a deck to add cards and study.</div>
+      <!-- Gate -->
+      <div id="deckGate" class="empty">Create or select a deck to add cards and study.</div>
 
-      <div id="cardUI" style="display:none">
+      <!-- Card UI -->
+      <div id="cardUI" style="display:none" class="vstack">
         <div class="row">
           <div>
-            <label for="topic">Topic (optional)</label>
+            <label for="topic">Topic</label>
             <input id="topic" type="text" placeholder="Optional" />
           </div>
           <div>
@@ -135,227 +515,242 @@
             </select>
           </div>
         </div>
-
-        <div style="height:10px"></div>
         <div>
           <label for="question">Question</label>
-          <textarea id="question"></textarea>
+          <textarea id="question" placeholder="Front of card…"></textarea>
         </div>
-
-        <div style="height:10px"></div>
         <div>
           <label for="answer">Answer</label>
-          <textarea id="answer"></textarea>
+          <textarea id="answer" placeholder="Back of card…"></textarea>
+        </div>
+        <div class="hstack">
+          <button class="btn-primary" id="btnAddCard">Add card</button>
+          <button id="btnClear">Clear</button>
         </div>
 
-        <div class="btns">
-          <button id="btnAddCard">Add card</button>
-          <button class="ghost" id="btnClear">Clear</button>
-        </div>
-
-        <div style="height:14px"></div>
+        <hr class="divider" />
 
         <div class="row">
           <div>
             <label for="search">Search</label>
-            <input id="search" type="text" placeholder="Search cards..." />
+            <input id="search" type="text" placeholder="Filter cards…" />
           </div>
           <div>
-            <label for="filterTopic">Filter topic</label>
-            <select id="filterTopic"><option value="">All</option></select>
+            <label for="filterTopic">Topic filter</label>
+            <select id="filterTopic"><option value="">All topics</option></select>
           </div>
         </div>
 
-        <div style="height:12px"></div>
-        <div class="list" id="list"></div>
+        <div class="card-list" id="list"></div>
       </div>
     </div>
   </section>
 
-  <!-- Right: study -->
-  <section class="panel">
-    <div class="hd">
+  <!-- Right: Study -->
+  <section class="right-panel">
+    <div class="panel-head">
       <h2>Study</h2>
-      <div class="btns" style="margin:0">
-        <button class="ghost" id="btnShuffle" disabled>Shuffle</button>
-        <button class="ghost" id="btnResetSession" disabled>Reset session</button>
+      <div class="hstack" style="margin:0">
+        <button class="btn-sm" id="btnShuffle" disabled>Shuffle</button>
+        <button class="btn-sm" id="btnResetSession" disabled>Reset</button>
       </div>
     </div>
 
-    <div class="bd">
-      <div class="progress">
-        <div id="progressText">No deck selected</div>
-        <div class="bar" aria-hidden="true"><div id="barFill"></div></div>
-        <div id="countText" style="min-width:140px; text-align:right"></div>
-      </div>
-
-      <div style="height:12px"></div>
-
-      <div class="flash" id="flash">
-        <div class="flashInner">
-          <div class="faceLabel" id="faceLabel">Question</div>
-          <div class="flashText" id="flashText">Select a deck to start.</div>
-        </div>
-
-        <div class="bottomBar">
-          <button class="ghost" id="btnPrev" disabled>Prev</button>
-          <button id="btnFlip" disabled>Flip</button>
-          <button class="ghost" id="btnNext" disabled>Next</button>
-          <button class="ok" id="btnKnow" disabled>Know (hide)</button>
-          <button class="danger" id="btnDont" disabled>Don't know</button>
-        </div>
-      </div>
-
-      <div style="height:12px"></div>
-      <div class="mutedBox">
-        Shortcuts: Space = flip, ←/→ = prev/next, S = shuffle, K = know (hide), D = don’t know.
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="barFill" style="width:0%"></div></div>
+      <div class="progress-meta">
+        <span id="progressText">No deck selected</span>
+        <span id="countText"></span>
       </div>
     </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-box good">
+        <div class="stat-num" id="statKnow">0</div>
+        <div class="stat-lbl">Got it</div>
+      </div>
+      <div class="stat-box bad">
+        <div class="stat-num" id="statDont">0</div>
+        <div class="stat-lbl">Again</div>
+      </div>
+      <div class="stat-box info">
+        <div class="stat-num" id="statLeft">0</div>
+        <div class="stat-lbl">Remaining</div>
+      </div>
+    </div>
+
+    <!-- Flashcard -->
+    <div class="flash-area">
+      <div class="flash-card" id="flash" role="button" tabindex="0" aria-label="Flashcard — click to flip">
+        <div class="requeue-badge" id="requeueBadge">↺ Will resurface</div>
+        <div class="flash-inner">
+          <div class="face-label" id="faceLabel">Question</div>
+          <div class="flash-text" id="flashText">Select a deck to start.</div>
+        </div>
+        <div class="flash-meta" id="flashMeta"></div>
+        <div class="action-bar">
+          <div class="nav-btns">
+            <button id="btnPrev" disabled aria-label="Previous card">←</button>
+            <button id="btnNext" disabled aria-label="Next card">→</button>
+          </div>
+          <div class="flip-center">
+            <button id="btnFlip" disabled style="min-width:90px">Flip</button>
+          </div>
+          <div class="rate-btns">
+            <button class="btn-success" id="btnKnow" disabled title="Got it — removes card from session (K)">✓ Got it</button>
+            <button class="btn-danger" id="btnDont" disabled title="Don't know — requeues card to end of session (D)">↺ Again</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keyboard hints -->
+    <div class="kbd-hint">
+      <span><kbd>Space</kbd> flip</span>
+      <span><kbd>←</kbd><kbd>→</kbd> prev/next</span>
+      <span><kbd>K</kbd> got it</span>
+      <span><kbd>D</kbd> again (requeue)</span>
+      <span><kbd>S</kbd> shuffle</span>
+    </div>
+
   </section>
-</main>
+</div>
 
 <script>
 (() => {
   "use strict";
 
-  // Storage schema:
-  // { selectedDeckId: string|null, decks: [{id,name,cards:[{id,topic,difficulty,question,answer,stats:{know,dont}}]}] }
   const STORAGE_KEY = "finals_flashcards_decks_v2";
+  const $ = id => document.getElementById(id);
 
-  const $ = (id) => document.getElementById(id);
-
-  const deckSelect = $("deckSelect");
-  const deckName = $("deckName");
+  // Elements
+  const deckSelect    = $("deckSelect");
+  const deckName      = $("deckName");
   const btnCreateDeck = $("btnCreateDeck");
   const btnDeleteDeck = $("btnDeleteDeck");
-
-  const btnExportAll = $("btnExportAll");
-  const btnImportAll = $("btnImportAll");
-  const importFile = $("importFile");
-
-  const deckGate = $("deckGate");
-  const cardUI = $("cardUI");
-
-  const topic = $("topic");
-  const difficulty = $("difficulty");
-  const question = $("question");
-  const answer = $("answer");
-  const btnAddCard = $("btnAddCard");
-  const btnClear = $("btnClear");
-  const search = $("search");
-  const filterTopic = $("filterTopic");
-  const list = $("list");
-
-  const btnShuffle = $("btnShuffle");
+  const btnExport     = $("btnExport");
+  const btnImport     = $("btnImport");
+  const importFile    = $("importFile");
+  const deckGate      = $("deckGate");
+  const cardUI        = $("cardUI");
+  const topic         = $("topic");
+  const difficulty    = $("difficulty");
+  const question      = $("question");
+  const answer        = $("answer");
+  const btnAddCard    = $("btnAddCard");
+  const btnClear      = $("btnClear");
+  const search        = $("search");
+  const filterTopic   = $("filterTopic");
+  const list          = $("list");
+  const btnShuffle    = $("btnShuffle");
   const btnResetSession = $("btnResetSession");
+  const flash         = $("flash");
+  const faceLabel     = $("faceLabel");
+  const flashText     = $("flashText");
+  const flashMeta     = $("flashMeta");
+  const requeueBadge  = $("requeueBadge");
+  const btnPrev       = $("btnPrev");
+  const btnFlip       = $("btnFlip");
+  const btnNext       = $("btnNext");
+  const btnKnow       = $("btnKnow");
+  const btnDont       = $("btnDont");
+  const progressText  = $("progressText");
+  const barFill       = $("barFill");
+  const countText     = $("countText");
+  const statKnow      = $("statKnow");
+  const statDont      = $("statDont");
+  const statLeft      = $("statLeft");
 
-  const flash = $("flash");
-  const faceLabel = $("faceLabel");
-  const flashText = $("flashText");
+  // Helpers
+  const uid  = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+  const norm = s  => (s || "").toLowerCase().trim();
+  const esc  = s  => (s ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[ch]));
 
-  const btnPrev = $("btnPrev");
-  const btnFlip = $("btnFlip");
-  const btnNext = $("btnNext");
-  const btnKnow = $("btnKnow");
-  const btnDont = $("btnDont");
-
-  const progressText = $("progressText");
-  const barFill = $("barFill");
-  const countText = $("countText");
-
-  const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
-  const norm = (s) => (s || "").toLowerCase().trim();
-  const esc = (s) => (s ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[ch]));
-
-  function shuffleInPlace(arr){
-    for(let i=arr.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [arr[i],arr[j]]=[arr[j],arr[i]];
+  function shuffleArr(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
     }
   }
 
+  // ── State ──
   let state = { selectedDeckId: null, decks: [] };
 
-  // Study session state (in memory only)
-  let session = { order: [], idx: 0, hidden: new Set(), side: "q" }; // side "q"|"a"
+  // Session: order = full list of card ids (excluding known).
+  // "Again" (doDont) moves the card to the END of order so it resurfaces.
+  // "Got it" (doKnow) removes the card from order permanently for this session.
+  let session = {
+    order: [],           // card ids still in play
+    idx: 0,
+    side: "q",
+    requeuedIds: new Set(),  // ids that have been requeued (for the badge)
+    sessionKnow: 0,
+    sessionDont: 0
+  };
 
-  function load(){
-    try{
+  // ── Persistence ──
+  function load() {
+    try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return;
+      if (!raw) return;
       const parsed = JSON.parse(raw);
-      if(parsed && Array.isArray(parsed.decks)) state = parsed;
+      if (parsed && Array.isArray(parsed.decks)) state = parsed;
     } catch {}
   }
-  function save(){
+  function save() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 
-  function currentDeck(){
+  // ── Accessors ──
+  function currentDeck() {
     return state.decks.find(d => d.id === state.selectedDeckId) || null;
   }
-
-  function ensureSelectedDeckValid(){
-    if(!state.selectedDeckId || !state.decks.some(d => d.id === state.selectedDeckId)){
+  function ensureValid() {
+    if (!state.selectedDeckId || !state.decks.some(d => d.id === state.selectedDeckId)) {
       state.selectedDeckId = state.decks[0]?.id ?? null;
     }
   }
-
-  function setControlsEnabled(enabled){
-    btnPrev.disabled = !enabled;
-    btnFlip.disabled = !enabled;
-    btnNext.disabled = !enabled;
-    btnKnow.disabled = !enabled;
-    btnDont.disabled = !enabled;
-    btnShuffle.disabled = !enabled;
-    btnResetSession.disabled = !enabled;
-    btnDeleteDeck.disabled = !enabled;
+  function currentCard() {
+    const d = currentDeck();
+    if (!d || !session.order.length) return null;
+    if (session.idx < 0) session.idx = 0;
+    if (session.idx >= session.order.length) session.idx = session.order.length - 1;
+    const id = session.order[session.idx];
+    return d.cards.find(c => c.id === id) || null;
   }
 
-  function renderDeckSelect(){
-    if(state.decks.length === 0){
-      deckSelect.innerHTML = `<option value="">— No decks —</option>`;
+  // ── Controls enable/disable ──
+  function setControls(on) {
+    [btnPrev, btnFlip, btnNext, btnKnow, btnDont, btnShuffle, btnResetSession].forEach(b => b.disabled = !on);
+    btnDeleteDeck.disabled = !currentDeck();
+  }
+
+  // ── Render: deck select ──
+  function renderDeckSelect() {
+    if (!state.decks.length) {
+      deckSelect.innerHTML = `<option value="">— no decks —</option>`;
       deckSelect.value = "";
       return;
     }
     deckSelect.innerHTML =
-      `<option value="">— Select a deck —</option>` +
+      `<option value="">— select —</option>` +
       state.decks
         .slice()
-        .sort((a,b)=>(a.name||"").localeCompare(b.name||""))
-        .map(d => `<option value="${esc(d.id)}">${esc(d.name || "Untitled deck")}</option>`)
+        .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+        .map(d => `<option value="${esc(d.id)}">${esc(d.name || "Untitled")}</option>`)
         .join("");
     deckSelect.value = state.selectedDeckId || "";
   }
 
-  function startSession(){
-    const d = currentDeck();
-    session.hidden = new Set();
-    session.idx = 0;
-    session.side = "q";
-    session.order = d ? (d.cards || []).map(c => c.id) : [];
-  }
+  // ── Render: flashcard face ──
+  function setFlashCard(card) {
+    flash.classList.remove("flipped", "requeued");
+    requeueBadge.classList.remove("visible");
+    flashMeta.innerHTML = "";
 
-  function visibleIds(){
-    return session.order.filter(id => !session.hidden.has(id));
-  }
-
-  function currentCard(){
-    const d = currentDeck();
-    if(!d || !Array.isArray(d.cards) || d.cards.length === 0) return null;
-
-    const vis = visibleIds();
-    if(vis.length === 0) return null;
-
-    if(session.idx < 0) session.idx = 0;
-    if(session.idx >= vis.length) session.idx = vis.length - 1;
-
-    const id = vis[session.idx];
-    return d.cards.find(c => c.id === id) || d.cards[0];
-  }
-
-  function setFlashCard(card){
-    if(!card){
+    if (!card) {
       faceLabel.textContent = "Question";
       flashText.textContent = "No cards available.";
       flashText.classList.remove("answer");
@@ -365,188 +760,234 @@
       return;
     }
 
-    // Cache both sides so flip is instant and DOM-only
     flashText.dataset.q = card.question ?? "";
     flashText.dataset.a = card.answer ?? "";
     flashText.dataset.side = "q";
-
     faceLabel.textContent = "Question";
     flashText.textContent = flashText.dataset.q;
     flashText.classList.remove("answer");
+
+    // Meta tags on card
+    const tags = [];
+    if (card.topic) tags.push(`<span class="tag">${esc(card.topic)}</span>`);
+    const diff = card.difficulty || "Medium";
+    tags.push(`<span class="tag ${diff === "Hard" ? "hard" : diff === "Easy" ? "easy" : ""}">${esc(diff)}</span>`);
+    tags.push(`<span class="tag">✓ ${card.stats?.know ?? 0}</span>`);
+    tags.push(`<span class="tag">↺ ${card.stats?.dont ?? 0}</span>`);
+    flashMeta.innerHTML = tags.join("");
+
+    if (session.requeuedIds.has(card.id)) {
+      requeueBadge.classList.add("visible");
+      flash.classList.add("requeued");
+    }
   }
 
-  function renderStudy(){
+  // ── Render: full study panel ──
+  function renderStudy() {
     const d = currentDeck();
-    if(!d){
-      setControlsEnabled(false);
+    if (!d) {
+      setControls(false);
       progressText.textContent = "No deck selected";
       countText.textContent = "";
       barFill.style.width = "0%";
       setFlashCard(null);
+      updateStats();
       return;
     }
 
-    const card = currentCard();
-    const vis = visibleIds();
+    const card  = currentCard();
+    const total = session.order.length;
 
-    if(!card){
-      setControlsEnabled(false);
-      progressText.textContent = `${d.name || "Deck"}: done`;
-      countText.textContent = `Hidden ${session.hidden.size} / ${session.order.length}`;
+    if (!card) {
+      setControls(false);
+      progressText.textContent = `${d.name || "Deck"} — session complete!`;
+      countText.textContent = "";
       barFill.style.width = "100%";
-      faceLabel.textContent = "Done";
-      flashText.textContent = "Session complete (all hidden). Click Reset session.";
+      flash.classList.remove("flipped", "requeued");
+      requeueBadge.classList.remove("visible");
+      faceLabel.textContent = "Complete";
+      flashText.textContent = "All cards cleared. Hit Reset to go again.";
       flashText.classList.remove("answer");
       flashText.dataset.q = "";
       flashText.dataset.a = "";
       flashText.dataset.side = "q";
+      flashMeta.innerHTML = "";
+      updateStats();
       return;
     }
 
-    setControlsEnabled(true);
-
+    setControls(true);
     const pos = session.idx + 1;
-    const total = vis.length;
     progressText.textContent = d.name || "Deck";
     countText.textContent = `${pos} / ${total}`;
-
-    const pct = total ? (pos / total * 100) : 0;
-    barFill.style.width = pct.toFixed(0) + "%";
-
+    barFill.style.width = total ? (pos / total * 100).toFixed(0) + "%" : "0%";
     setFlashCard(card);
+    updateStats();
   }
 
-  function renderTopics(){
+  function updateStats() {
+    statKnow.textContent = session.sessionKnow;
+    statDont.textContent = session.sessionDont;
+    statLeft.textContent = session.order.length;
+  }
+
+  // ── Render: topics ──
+  function renderTopics() {
     const d = currentDeck();
-    const topics = d ? [...new Set((d.cards||[]).map(c => c.topic).filter(Boolean))].sort((a,b)=>a.localeCompare(b)) : [];
+    const topics = d
+      ? [...new Set((d.cards || []).map(c => c.topic).filter(Boolean))].sort((a, b) => a.localeCompare(b))
+      : [];
     const prev = filterTopic.value;
-    filterTopic.innerHTML = `<option value="">All</option>` + topics.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join("");
-    if(topics.includes(prev)) filterTopic.value = prev;
+    filterTopic.innerHTML = `<option value="">All topics</option>` +
+      topics.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join("");
+    if (topics.includes(prev)) filterTopic.value = prev;
   }
 
-  function filteredCards(){
+  // ── Render: card list ──
+  function filteredCards() {
     const d = currentDeck();
     const cards = d ? (d.cards || []) : [];
     const q = norm(search.value);
     const t = filterTopic.value;
-
     return cards.filter(c => {
-      if(t && (c.topic || "") !== t) return false;
-      if(!q) return true;
-      return norm(c.topic).includes(q) || norm(c.difficulty).includes(q) || norm(c.question).includes(q) || norm(c.answer).includes(q);
+      if (t && (c.topic || "") !== t) return false;
+      if (!q) return true;
+      return norm(c.topic).includes(q) || norm(c.difficulty).includes(q) ||
+             norm(c.question).includes(q) || norm(c.answer).includes(q);
     });
   }
 
-  function renderList(){
+  function renderList() {
     const d = currentDeck();
-    if(!d){
-      list.innerHTML = "";
-      return;
-    }
+    if (!d) { list.innerHTML = ""; return; }
     const arr = filteredCards();
-    if(arr.length === 0){
-      list.innerHTML = `<div class="mutedBox">No cards match your search.</div>`;
+    if (!arr.length) {
+      list.innerHTML = `<div class="empty">No cards match.</div>`;
       return;
     }
-
-    list.innerHTML = arr.map(c => `
-      <div class="item">
-        <div>
-          <div class="meta">
-            <span class="tag">${esc(c.topic || "No topic")}</span>
-            <span class="tag">${esc(c.difficulty || "Medium")}</span>
-            <span class="tag">Know: ${c.stats?.know ?? 0}</span>
-            <span class="tag">Don't: ${c.stats?.dont ?? 0}</span>
+    list.innerHTML = arr.map(c => {
+      const diff = c.difficulty || "Medium";
+      return `
+        <div class="card-item">
+          <div class="tags">
+            <span class="tag ${diff === "Hard" ? "hard" : diff === "Easy" ? "easy" : ""}">${esc(diff)}</span>
+            ${c.topic ? `<span class="tag">${esc(c.topic)}</span>` : ""}
+            <span class="tag">✓ ${c.stats?.know ?? 0}</span>
+            <span class="tag">↺ ${c.stats?.dont ?? 0}</span>
           </div>
-          <div class="qPreview">${esc(c.question).slice(0,120)}${(c.question||"").length>120 ? "…" : ""}</div>
-          <div class="aPreview">${esc(c.answer).slice(0,120)}${(c.answer||"").length>120 ? "…" : ""}</div>
-        </div>
-        <div class="itemActions">
-          <button class="ghost" data-act="study" data-id="${esc(c.id)}">Study</button>
-          <button class="danger" data-act="del" data-id="${esc(c.id)}">Delete</button>
-        </div>
-      </div>
-    `).join("");
+          <div class="q">${esc(c.question).slice(0, 140)}${(c.question || "").length > 140 ? "…" : ""}</div>
+          <div class="a">${esc(c.answer).slice(0, 140)}${(c.answer || "").length > 140 ? "…" : ""}</div>
+          <div class="hstack" style="justify-content:flex-end;margin-top:4px">
+            <button class="btn-sm" data-act="study" data-id="${esc(c.id)}">Jump to</button>
+            <button class="btn-sm btn-danger" data-act="del" data-id="${esc(c.id)}">Delete</button>
+          </div>
+        </div>`;
+    }).join("");
   }
 
-  function setDeckUIEnabled(enabled){
-    cardUI.style.display = enabled ? "" : "none";
-    deckGate.style.display = enabled ? "none" : "";
-    btnDeleteDeck.disabled = !enabled;
+  function setDeckUIEnabled(on) {
+    cardUI.style.display = on ? "" : "none";
+    deckGate.style.display = on ? "none" : "";
+    btnDeleteDeck.disabled = !on;
   }
 
-  // --- Actions (all simple + deterministic) ---
-  function doFlip(){
-    // This is intentionally DOM-only. No session math, no lookups.
+  // ── Session ──
+  function startSession() {
+    const d = currentDeck();
+    session = {
+      order: d ? (d.cards || []).map(c => c.id) : [],
+      idx: 0,
+      side: "q",
+      requeuedIds: new Set(),
+      sessionKnow: 0,
+      sessionDont: 0
+    };
+  }
+
+  // ── Actions ──
+
+  function doFlip() {
     const q = flashText.dataset.q || "";
     const a = flashText.dataset.a || "";
-    if(!q && !a) return;
-
-    const side = flashText.dataset.side || "q";
-    if(side === "q"){
+    if (!q && !a) return;
+    if ((flashText.dataset.side || "q") === "q") {
       flashText.dataset.side = "a";
       faceLabel.textContent = "Answer";
       flashText.textContent = a;
       flashText.classList.add("answer");
+      flash.classList.add("flipped");
     } else {
       flashText.dataset.side = "q";
       faceLabel.textContent = "Question";
       flashText.textContent = q;
       flashText.classList.remove("answer");
+      flash.classList.remove("flipped");
     }
   }
 
-  function doNext(){
-    const vis = visibleIds();
-    if(vis.length === 0) return;
-    session.idx = Math.min(vis.length - 1, session.idx + 1);
+  function doNext() {
+    if (!session.order.length) return;
+    session.idx = Math.min(session.order.length - 1, session.idx + 1);
     renderStudy();
   }
 
-  function doPrev(){
-    const vis = visibleIds();
-    if(vis.length === 0) return;
+  function doPrev() {
+    if (!session.order.length) return;
     session.idx = Math.max(0, session.idx - 1);
     renderStudy();
   }
 
-  function doKnow(){
+  function doKnow() {
     const c = currentCard();
     const d = currentDeck();
-    if(!c || !d) return;
+    if (!c || !d) return;
     c.stats = c.stats || { know: 0, dont: 0 };
     c.stats.know++;
-    session.hidden.add(c.id);
+    session.sessionKnow++;
+    // Remove from session order permanently
+    session.order.splice(session.idx, 1);
+    session.requeuedIds.delete(c.id);
+    if (session.idx >= session.order.length) session.idx = Math.max(0, session.order.length - 1);
     save();
     renderList();
     renderStudy();
   }
 
-  function doDont(){
+  function doDont() {
     const c = currentCard();
     const d = currentDeck();
-    if(!c || !d) return;
+    if (!c || !d) return;
     c.stats = c.stats || { know: 0, dont: 0 };
     c.stats.dont++;
+    session.sessionDont++;
+    session.requeuedIds.add(c.id);
+
+    // Move card to END of order so it resurfaces after all remaining cards
+    const id = session.order.splice(session.idx, 1)[0];
+    session.order.push(id);
+
+    // idx now points to the next card naturally (we removed current);
+    // clamp in case we were at the end
+    if (session.idx >= session.order.length) session.idx = 0;
     save();
     renderList();
     renderStudy();
   }
 
-  function doShuffle(){
-    shuffleInPlace(session.order);
+  function doShuffle() {
+    shuffleArr(session.order);
     session.idx = 0;
     renderStudy();
   }
 
-  function doResetSession(){
+  function doResetSession() {
     startSession();
     renderStudy();
   }
 
-  function createDeck(){
+  function createDeck() {
     const name = deckName.value.trim();
-    if(!name) return alert("Type a deck name.");
+    if (!name) return alert("Enter a deck name.");
     const d = { id: uid(), name, cards: [] };
     state.decks.push(d);
     state.selectedDeckId = d.id;
@@ -555,24 +996,22 @@
     syncAll();
   }
 
-  function deleteDeck(){
+  function deleteDeck() {
     const d = currentDeck();
-    if(!d) return;
-    if(!confirm(`Delete deck "${d.name || "Untitled"}" and all cards?`)) return;
+    if (!d) return;
+    if (!confirm(`Delete "${d.name || "Untitled"}" and all its cards?`)) return;
     state.decks = state.decks.filter(x => x.id !== d.id);
-    ensureSelectedDeckValid();
+    ensureValid();
     save();
     syncAll();
   }
 
-  function addCard(){
+  function addCard() {
     const d = currentDeck();
-    if(!d) return;
-
+    if (!d) return;
     const q = question.value.trim();
     const a = answer.value.trim();
-    if(!q || !a) return alert("Please fill in both question and answer.");
-
+    if (!q || !a) return alert("Fill in both question and answer.");
     const card = {
       id: uid(),
       topic: topic.value.trim(),
@@ -581,31 +1020,26 @@
       answer: a,
       stats: { know: 0, dont: 0 }
     };
-
     d.cards.unshift(card);
     save();
-
-    // Keep session in sync
     session.order.unshift(card.id);
     session.idx = 0;
-
     question.value = "";
     answer.value = "";
     question.focus();
-
     renderTopics();
     renderList();
     renderStudy();
   }
 
-  function clearInputs(){
+  function clearInputs() {
     topic.value = "";
     difficulty.value = "Medium";
     question.value = "";
     answer.value = "";
   }
 
-  function exportAll(){
+  function exportAll() {
     const payload = {
       exported_at: new Date().toISOString(),
       storage_key: STORAGE_KEY,
@@ -622,99 +1056,86 @@
     URL.revokeObjectURL(url);
   }
 
-  function importAllFromParsed(parsed){
-    // Accept either: {state:{...}} OR the older {deck:{...}} single-deck format
-    if(parsed?.state?.decks){
+  function importFromParsed(parsed) {
+    if (parsed?.state?.decks) {
       state = parsed.state;
-      ensureSelectedDeckValid();
+      ensureValid();
       save();
       syncAll();
       return;
     }
-    if(parsed?.deck?.cards){
+    if (parsed?.deck?.cards) {
       const deck = parsed.deck;
       state = {
         selectedDeckId: deck.id || uid(),
-        decks: [{
-          id: deck.id || uid(),
-          name: deck.name || "Imported deck",
-          cards: deck.cards || []
-        }]
+        decks: [{ id: deck.id || uid(), name: deck.name || "Imported deck", cards: deck.cards || [] }]
       };
       save();
       syncAll();
       return;
     }
-    alert("Import file format not recognized.");
+    alert("Import format not recognized.");
   }
 
-  function syncAll(){
-    ensureSelectedDeckValid();
+  function syncAll() {
+    ensureValid();
     renderDeckSelect();
-
     const d = currentDeck();
     setDeckUIEnabled(!!d);
-
     startSession();
     renderTopics();
     renderList();
     renderStudy();
   }
 
-  // --- Wire events (no capture tricks, no preventDefault needed) ---
+  // ── Event wiring ──
   btnCreateDeck.addEventListener("click", createDeck);
   btnDeleteDeck.addEventListener("click", deleteDeck);
-
-  btnAddCard.addEventListener("click", addCard);
-  btnClear.addEventListener("click", clearInputs);
-
   deckSelect.addEventListener("change", () => {
     state.selectedDeckId = deckSelect.value || null;
     save();
     syncAll();
   });
 
+  btnAddCard.addEventListener("click", addCard);
+  btnClear.addEventListener("click", clearInputs);
+
   search.addEventListener("input", renderList);
   filterTopic.addEventListener("change", renderList);
 
-  list.addEventListener("click", (e) => {
+  list.addEventListener("click", e => {
     const b = e.target.closest("button[data-act]");
-    if(!b) return;
+    if (!b) return;
     const act = b.getAttribute("data-act");
-    const id = b.getAttribute("data-id");
-    const d = currentDeck();
-    if(!act || !id || !d) return;
+    const id  = b.getAttribute("data-id");
+    const d   = currentDeck();
+    if (!act || !id || !d) return;
 
-    if(act === "del"){
-      if(!confirm("Delete this card?")) return;
+    if (act === "del") {
+      if (!confirm("Delete this card?")) return;
       d.cards = (d.cards || []).filter(c => c.id !== id);
       save();
-
-      // keep session/order consistent
-      session.order = session.order.filter(x => x !== id);
-      session.hidden.delete(id);
-      if(session.idx >= visibleIds().length) session.idx = Math.max(0, visibleIds().length - 1);
-
+      const i = session.order.indexOf(id);
+      if (i !== -1) session.order.splice(i, 1);
+      session.requeuedIds.delete(id);
+      if (session.idx >= session.order.length) session.idx = Math.max(0, session.order.length - 1);
       renderTopics();
       renderList();
       renderStudy();
-    } else if(act === "study"){
-      // Jump to that card in session (unhide if hidden)
-      session.hidden.delete(id);
-      const vis = visibleIds();
-      const idx = vis.indexOf(id);
+    } else if (act === "study") {
+      if (!session.order.includes(id)) session.order.push(id);
+      const idx = session.order.indexOf(id);
       session.idx = idx >= 0 ? idx : 0;
       renderStudy();
     }
   });
 
-  // Study buttons
-  btnFlip.addEventListener("click", doFlip);
-  flash.addEventListener("click", (e) => {
-    // Only flip when clicking the card area, not clicking buttons
-    if(e.target.closest("button")) return;
-    doFlip();
+  btnFlip.addEventListener("click", e => { e.stopPropagation(); doFlip(); });
+  flash.addEventListener("click", e => { if (e.target.closest("button")) return; doFlip(); });
+  flash.addEventListener("keydown", e => {
+    if (e.key === " " || e.key === "Enter") { e.preventDefault(); doFlip(); }
   });
+
   btnNext.addEventListener("click", doNext);
   btnPrev.addEventListener("click", doPrev);
   btnKnow.addEventListener("click", doKnow);
@@ -722,28 +1143,25 @@
   btnShuffle.addEventListener("click", doShuffle);
   btnResetSession.addEventListener("click", doResetSession);
 
-  // Keyboard shortcuts
-  document.addEventListener("keydown", (e) => {
-    const tag = (e.target && e.target.tagName || "").toLowerCase();
-    if(tag === "input" || tag === "textarea" || tag === "select") return;
-
-    if(e.code === "Space"){ e.preventDefault(); doFlip(); }
-    else if(e.key === "ArrowRight") doNext();
-    else if(e.key === "ArrowLeft") doPrev();
-    else if(e.key.toLowerCase() === "s") doShuffle();
-    else if(e.key.toLowerCase() === "k") doKnow();
-    else if(e.key.toLowerCase() === "d") doDont();
+  document.addEventListener("keydown", e => {
+    const tag = (e.target?.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if (e.code === "Space")             { e.preventDefault(); doFlip(); }
+    else if (e.key === "ArrowRight")    doNext();
+    else if (e.key === "ArrowLeft")     doPrev();
+    else if (e.key.toLowerCase() === "s") doShuffle();
+    else if (e.key.toLowerCase() === "k") doKnow();
+    else if (e.key.toLowerCase() === "d") doDont();
   });
 
-  // Import/export
-  btnExportAll.addEventListener("click", exportAll);
-  btnImportAll.addEventListener("click", () => importFile.click());
+  btnExport.addEventListener("click", exportAll);
+  btnImport.addEventListener("click", () => importFile.click());
   importFile.addEventListener("change", async () => {
     const file = importFile.files && importFile.files[0];
-    if(!file) return;
-    try{
+    if (!file) return;
+    try {
       const parsed = JSON.parse(await file.text());
-      importAllFromParsed(parsed);
+      importFromParsed(parsed);
     } catch {
       alert("Could not read that JSON file.");
     } finally {
@@ -751,9 +1169,9 @@
     }
   });
 
-  // Init
+  // ── Init ──
   load();
-  ensureSelectedDeckValid();
+  ensureValid();
   syncAll();
 })();
 </script>
